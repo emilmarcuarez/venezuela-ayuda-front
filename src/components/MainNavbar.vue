@@ -8,22 +8,35 @@
         <span class="logo-text">Venezuela Ayuda</span>
       </div>
       
-      <div class="nav-links">
-        <a href="#" class="active">Inicio</a>
-        <a href="#">Nosotros</a>
-        <a href="#">Peticiones</a>
-        <a href="#">Transparencia</a>
-      </div>
+      <button class="mobile-toggle" @click="isMobileMenuOpen = !isMobileMenuOpen">
+        <svg v-if="!isMobileMenuOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
 
-      <div class="nav-actions">
-        <button class="btn btn-primary">Donar Ahora</button>
-        <button class="icon-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-power"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-        </button>
+      <div class="nav-menu" :class="{ 'is-open': isMobileMenuOpen }">
+        <div class="nav-links">
+          <a href="#" class="active">Inicio</a>
+          <a href="#">Nosotros</a>
+          <a href="#">Peticiones</a>
+          <a href="#">Transparencia</a>
+        </div>
+
+        <div class="nav-actions">
+          <button class="btn btn-primary">Donar Ahora</button>
+          <button class="icon-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-power"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+          </button>
+        </div>
       </div>
     </div>
   </nav>
 </template>
+
+<script setup>
+import { ref } from 'vue';
+
+const isMobileMenuOpen = ref(false);
+</script>
 
 <style scoped>
 .main-navbar {
@@ -75,6 +88,12 @@
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.02em;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
 }
 
 .nav-links {
@@ -156,9 +175,55 @@
   color: #ffffff;
 }
 
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.mobile-toggle svg {
+  width: 32px;
+  height: 32px;
+}
+
+@media (max-width: 992px) {
+  .mobile-toggle {
+    display: block;
+    z-index: 1000;
   }
+  .nav-menu {
+    position: absolute;
+    top: 76px; /* Below navbar */
+    left: 0;
+    width: 100%;
+    height: auto; /* Only take the space of the contents */
+    background-color: #020617; /* Solid deep blue matching the navbar */
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    gap: 2rem;
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); /* Hidden */
+    transition: clip-path 0.4s ease-in-out;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Clean border at the end of the menu */
+  }
+  .nav-menu.is-open {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); /* Revealed */
+  }
+  .nav-links {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .nav-links a {
+    font-size: 1.2rem;
+  }
+  .nav-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .btn { width: 100%; text-align: center; }
 }
 </style>
