@@ -68,12 +68,14 @@
 
 .image-stack {
   position: relative;
-  height: 500px;
+  height: 580px;
+  width: 100%;
 }
 
 .img-back {
-  width: 60%;
-  height: auto;
+  width: 65%;
+  height: 70%;
+  object-fit: cover;
   border-radius: 24px;
   position: absolute;
   top: 0;
@@ -84,14 +86,15 @@
 
 .img-front {
   width: 65%;
-  height: auto;
+  height: 70%;
+  object-fit: cover;
   border-radius: 24px;
   position: absolute;
   bottom: 0;
   right: 0;
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
   z-index: 2;
-  border: 8px solid var(--color-bg-light);
+  border: 10px solid var(--color-bg-light);
 }
 
 .floating-quote {
@@ -157,12 +160,12 @@ h2 {
 .icon {
   width: 48px;
   height: 48px;
-  background-color: #f0f4f8;
+  background-color: rgba(14, 165, 233, 0.1); /* light cyan */
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary);
+  color: #0ea5e9;
   flex-shrink: 0;
 }
 
@@ -196,9 +199,45 @@ h2 {
   }
   .visual-side {
     width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .image-stack {
+    height: 480px;
+    max-width: 550px;
+    margin: 0 auto;
+  }
+  .img-back {
+    width: 70%;
+    height: 70%;
+  }
+  .img-front {
+    width: 75%;
+    height: 70%;
   }
   .floating-quote {
-    left: 20px;
+    left: 5%;
+    width: 90%;
+    bottom: -30px;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .movement-section {
+    padding: 5rem 1.5rem;
+  }
+  h2 {
+    font-size: 2.5rem;
+  }
+  .image-stack {
+    height: 400px;
+  }
+  .img-front {
+    border-width: 6px;
+  }
+  .floating-quote p {
+    font-size: 0.85rem;
   }
 }
 </style>
