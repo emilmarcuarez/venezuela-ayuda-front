@@ -14,18 +14,20 @@
       </button>
 
       <div class="nav-menu" :class="{ 'is-open': isMobileMenuOpen }">
-        <div class="nav-links">
-          <a href="#" class="active">Inicio</a>
-          <a href="#">Nosotros</a>
-          <a href="#">Peticiones</a>
-          <a href="#">Transparencia</a>
-        </div>
+        <div class="menu-content">
+          <div class="nav-links">
+            <a href="#" class="active">Inicio</a>
+            <a href="#">Nosotros</a>
+            <a href="#">Peticiones</a>
+            <a href="#">Transparencia</a>
+          </div>
 
-        <div class="nav-actions">
-          <button class="btn btn-primary">Donar Ahora</button>
-          <button class="icon-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-power"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
-          </button>
+          <div class="nav-actions">
+            <button class="btn btn-primary">Donar Ahora</button>
+            <button class="icon-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-power"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -33,9 +35,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, onUnmounted } from 'vue';
 
 const isMobileMenuOpen = ref(false);
+
+watch(isMobileMenuOpen, (isOpen) => {
+  if (isOpen) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+});
+
+onUnmounted(() => {
+  document.body.style.overflow = '';
+});
 </script>
 
 <style scoped>
@@ -91,6 +105,11 @@ const isMobileMenuOpen = ref(false);
 }
 
 .nav-menu {
+  display: flex;
+  align-items: center;
+}
+
+.menu-content {
   display: flex;
   align-items: center;
   gap: 3rem;
@@ -195,22 +214,27 @@ const isMobileMenuOpen = ref(false);
     z-index: 1000;
   }
   .nav-menu {
-    position: absolute;
-    top: 76px; /* Below navbar */
+    display: block;
+    position: fixed;
+    top: 76px; /* Right beneath the navbar */
     left: 0;
     width: 100%;
-    height: auto; /* Only take the space of the contents */
-    background-color: #020617; /* Solid deep blue matching the navbar */
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem;
-    gap: 2rem;
+    height: calc(100vh - 76px); /* Cover the entire screen below */
+    background-color: rgba(2, 6, 23, 0.4); /* Transparent Overlay */
+    backdrop-filter: blur(4px);
     clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); /* Hidden */
     transition: clip-path 0.4s ease-in-out;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Clean border at the end of the menu */
+    overflow-y: auto;
   }
   .nav-menu.is-open {
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); /* Revealed */
+  }
+  .menu-content {
+    background-color: #020617; /* Solid dark box up to buttons */
+    flex-direction: column;
+    padding: 3rem 2rem;
+    gap: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Clean border at the end of the menu */
   }
   .nav-links {
     flex-direction: column;
