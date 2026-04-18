@@ -7,10 +7,17 @@
         </div>
         <span class="logo-text">Venezuela Ayuda</span>
       </div>
-      
+
       <button class="mobile-toggle" @click="isMobileMenuOpen = !isMobileMenuOpen">
-        <svg v-if="!isMobileMenuOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <svg v-if="!isMobileMenuOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
       </button>
 
       <div class="nav-menu" :class="{ 'is-open': isMobileMenuOpen }">
@@ -25,7 +32,11 @@
           <div class="nav-actions">
             <button class="btn btn-primary">Donar Ahora</button>
             <button class="icon-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-power"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" class="feather feather-power">
+                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                <line x1="12" y1="2" x2="12" y2="12"></line>
+              </svg>
             </button>
           </div>
         </div>
@@ -55,7 +66,7 @@ onUnmounted(() => {
 <style scoped>
 .main-navbar {
   width: 100%;
-  background-color: #020617; /* Solid ultra-dark blue to match the theme strictly without murky mixing */
+  background-color: #020617;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   padding: 1rem 0;
   position: sticky;
@@ -122,7 +133,8 @@ onUnmounted(() => {
 
 .nav-links a {
   text-decoration: none;
-  color: #e2e8f0; /* Crisp light slate instead of dull gray */
+  color: #e2e8f0;
+  /* Crisp light slate instead of dull gray */
   font-size: 0.95rem;
   font-weight: 600;
   transition: color 0.2s;
@@ -180,7 +192,8 @@ onUnmounted(() => {
 .icon-btn {
   background: none;
   border: none;
-  color: #e2e8f0; /* Crisp light slate */
+  color: #e2e8f0;
+  /* Crisp light slate */
   cursor: pointer;
   width: 28px;
   height: 28px;
@@ -213,41 +226,58 @@ onUnmounted(() => {
     display: block;
     z-index: 1000;
   }
+
   .nav-menu {
     display: block;
     position: fixed;
-    top: 76px; /* Right beneath the navbar */
+    top: 76px;
+    /* Right beneath the navbar */
     left: 0;
     width: 100%;
-    height: calc(100vh - 76px); /* Cover the entire screen below */
-    background-color: rgba(2, 6, 23, 0.4); /* Transparent Overlay */
+    height: calc(100vh - 76px);
+    /* Cover the entire screen below */
+    background-color: rgba(2, 6, 23, 0.4);
+    /* Transparent Overlay */
     backdrop-filter: blur(4px);
-    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); /* Hidden */
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+    /* Hidden */
     transition: clip-path 0.4s ease-in-out;
     overflow-y: auto;
   }
+
   .nav-menu.is-open {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); /* Revealed */
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    /* Revealed */
   }
+
   .menu-content {
-    background-color: #020617; /* Solid dark box up to buttons */
+    background-color: #020617;
+    /* Solid dark box up to buttons */
     flex-direction: column;
     padding: 3rem 2rem;
     gap: 2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Clean border at the end of the menu */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    /* Clean border at the end of the menu */
   }
+
   .nav-links {
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
   }
+
   .nav-links a {
     font-size: 1.2rem;
   }
+
   .nav-actions {
     flex-direction: column;
     width: 100%;
   }
-  .btn { width: 100%; text-align: center; }
+
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
 }
 </style>
