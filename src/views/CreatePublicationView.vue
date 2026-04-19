@@ -75,10 +75,8 @@
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
               </label>
+              <ValidationMessage :message="errors.category" />
             </div>
-            <p v-if="errors.category" class="field-error">
-              <span aria-hidden="true">!</span>{{ errors.category }}
-            </p>
 
             <SectionTitle tone="blue" title="Detalles de la Publicación" />
 
@@ -92,9 +90,7 @@
                   :aria-invalid="Boolean(errors.title)"
                   @input="clearError('title')"
                 />
-                <p v-if="errors.title" class="field-error">
-                  <span aria-hidden="true">!</span>{{ errors.title }}
-                </p>
+                <ValidationMessage :message="errors.title" />
               </label>
 
               <div class="two-column">
@@ -109,9 +105,7 @@
                     :aria-invalid="Boolean(errors.value)"
                     @input="clearError('value')"
                   />
-                  <p v-if="errors.value" class="field-error">
-                    <span aria-hidden="true">!</span>{{ errors.value }}
-                  </p>
+                  <ValidationMessage :message="errors.value" />
                 </label>
 
                 <label
@@ -126,9 +120,7 @@
                       <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
                     </svg>
                   </button>
-                  <p v-if="errors.deadline" class="field-error">
-                    <span aria-hidden="true">!</span>{{ errors.deadline }}
-                  </p>
+                  <ValidationMessage :message="errors.deadline" />
 
                   <div v-if="isCalendarOpen" class="calendar-panel" aria-label="Calendario de fecha límite">
                     <div class="calendar-header">
@@ -211,15 +203,13 @@
                   :aria-invalid="Boolean(errors.description)"
                   @input="clearError('description')"
                 ></textarea>
-                <p v-if="errors.description" class="field-error">
-                  <span aria-hidden="true">!</span>{{ errors.description }}
-                </p>
+                <ValidationMessage :message="errors.description" />
               </label>
             </div>
           </div>
 
           <div v-else-if="currentStep === 2" class="step-panel">
-            <SectionTitle tone="yellow" title="Información de contacto" />
+            <SectionTitle tone="blue" title="Información de contacto" />
 
             <div class="form-stack">
               <label
@@ -235,44 +225,48 @@
                   :aria-invalid="Boolean(errors.contactName)"
                   @input="clearError('contactName')"
                 />
-                <p v-if="errors.contactName" class="field-error">
-                  <span aria-hidden="true">!</span>{{ errors.contactName }}
-                </p>
+                <ValidationMessage :message="errors.contactName" />
               </label>
 
               <div class="two-column">
                 <label class="field-group" :class="{ 'has-error': errors.phone, 'is-shaking': errorFocusField === 'phone' }" data-field="phone">
                   <span>NÚMERO DE TELÉFONO</span>
-                  <input
-                    v-model="form.phone"
-                    type="tel"
-                    placeholder="+58 (000) 000-0000"
-                    :aria-invalid="Boolean(errors.phone)"
-                    @input="clearError('phone')"
-                  />
-                  <p v-if="errors.phone" class="field-error">
-                    <span aria-hidden="true">!</span>{{ errors.phone }}
-                  </p>
+                  <div class="phone-input-row">
+                    <CustomSelect
+                      v-model="form.countryCode"
+                      :options="countryCodeOptions"
+                      placeholder="+58"
+                      :invalid="Boolean(errors.phone)"
+                      @update:model-value="clearError('phone')"
+                    />
+                    <input
+                      v-model="form.phone"
+                      type="tel"
+                      inputmode="numeric"
+                      placeholder="000 000 0000"
+                      :aria-invalid="Boolean(errors.phone)"
+                      @input="handlePhoneInput"
+                    />
+                  </div>
+                  <ValidationMessage :message="errors.phone" />
                 </label>
 
-                <label
+                <div
                   class="field-group"
                   :class="{ 'has-error': errors.location, 'is-shaking': errorFocusField === 'location' }"
                   data-field="location"
                 >
-                  <span>UBICACIÓN PRINCIPAL</span>
-                  <select v-model="form.location" :aria-invalid="Boolean(errors.location)" @change="clearError('location')">
-                    <option disabled value="">Ciudad, Estado</option>
-                    <option>Caracas, Distrito Capital</option>
-                    <option>Maracaibo, Zulia</option>
-                    <option>Valencia, Carabobo</option>
-                    <option>Barquisimeto, Lara</option>
-                    <option>San Cristóbal, Táchira</option>
-                  </select>
-                  <p v-if="errors.location" class="field-error">
-                    <span aria-hidden="true">!</span>{{ errors.location }}
-                  </p>
-                </label>
+                  <span id="location-label">UBICACIÓN PRINCIPAL</span>
+                  <CustomSelect
+                    v-model="form.location"
+                    :options="locationOptions"
+                    placeholder="Ciudad, Estado"
+                    :invalid="Boolean(errors.location)"
+                    label-id="location-label"
+                    @update:model-value="clearError('location')"
+                  />
+                  <ValidationMessage :message="errors.location" />
+                </div>
               </div>
 
               <div
@@ -294,31 +288,32 @@
                     <small>{{ preference.caption }}</small>
                   </label>
                 </div>
-                <p v-if="errors.preference" class="field-error">
-                  <span aria-hidden="true">!</span>{{ errors.preference }}
-                </p>
+                <ValidationMessage :message="errors.preference" />
               </div>
             </div>
           </div>
 
           <div v-else class="step-panel review-panel">
-            <SectionTitle tone="yellow" title="Revisa antes de publicar" />
-            <p class="step-copy">
-              Confirma que la información sea clara, verificable y segura para quienes van a
-              coordinar la ayuda contigo.
-            </p>
+            <SectionTitle tone="red" title="Revisa antes de publicar" />
 
             <div class="publication-preview">
               <div class="preview-header">
-                <span>{{ form.category }}</span>
-                <strong>{{ formattedDeadline || 'Fecha pendiente' }}</strong>
+                <span class="preview-badge">
+                  <span class="review-icon" v-html="currentCategory.icon"></span>
+                  {{ form.category }}
+                </span>
+                <strong>
+                  <span class="review-icon" v-html="reviewIcons.calendar"></span>
+                  {{ formattedDeadline || 'Fecha pendiente' }}
+                </strong>
               </div>
               <h3>{{ form.title || 'Título de tu publicación' }}</h3>
               <p>{{ form.description || 'Describe los artículos, cantidades, condiciones y urgencia de la necesidad.' }}</p>
               <div class="preview-meta">
-                <span>{{ form.location || 'Ubicación pendiente' }}</span>
-                <span>{{ form.value ? `$${form.value}` : 'Valor por definir' }}</span>
-                <span>{{ form.preference }}</span>
+                <span v-for="item in previewMetaItems" :key="item.label">
+                  <span class="review-icon" v-html="item.icon"></span>
+                  {{ item.value }}
+                </span>
               </div>
             </div>
 
@@ -326,7 +321,10 @@
               <div class="review-summary">
                 <h3>Resumen de contacto</h3>
                 <div v-for="item in reviewItems" :key="item.label" class="review-row">
-                  <span>{{ item.label }}</span>
+                  <span>
+                    <span class="review-icon" v-html="item.icon"></span>
+                    {{ item.label }}
+                  </span>
                   <strong>{{ item.value || 'Pendiente' }}</strong>
                 </div>
               </div>
@@ -367,22 +365,22 @@
           </div>
 
           <div class="form-actions">
-            <button class="ghost-action" type="button" :disabled="currentStep === 1" @click="previousStep">
+            <button class="ghost-action" type="button" :disabled="currentStep === 1 || isPublishing" @click="previousStep">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M19 12H5m7 7-7-7 7-7" />
               </svg>
               Atrás
             </button>
 
-            <button v-if="currentStep < 3" class="primary-action" type="button" @click="nextStep">
+            <button v-if="currentStep < 3" class="primary-action" type="button" :disabled="isPublishing" @click="nextStep">
               {{ currentStep === 1 ? 'Continuar al Contacto' : 'Continuar a Revisión' }}
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M5 12h14m-7-7 7 7-7 7" />
               </svg>
             </button>
 
-            <button v-else class="primary-action" type="submit">
-              Publicar solicitud
+            <button v-else class="primary-action" type="submit" :disabled="isPublishing">
+              {{ isPublishing ? 'Publicando...' : 'Publicar solicitud' }}
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M20 6 9 17l-5-5" />
               </svg>
@@ -434,17 +432,29 @@
       </form>
     </main>
 
+    <PublishingLoader
+      :active="isPublishing"
+      title="Publicando solicitud"
+      copy="Estamos resguardando la información y preparando tu solicitud para revisión comunitaria."
+    />
+
     <MainFooter />
   </div>
 </template>
 
 <script setup>
-import { computed, defineComponent, h, nextTick, reactive, ref } from 'vue';
+import { computed, defineComponent, h, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import communityHandsImage from '../assets/community-hands.png';
 import handshakeWindowImage from '../assets/handshake-window.jpg';
 import hopeCommunityImage from '../assets/impacto-movimiento.png';
+import CustomSelect from '../components/CustomSelect.vue';
 import MainFooter from '../components/MainFooter.vue';
 import MainNavbar from '../components/MainNavbar.vue';
+import PublishingLoader from '../components/PublishingLoader.vue';
+import ValidationMessage from '../components/ValidationMessage.vue';
+
+const router = useRouter();
 
 const SectionTitle = defineComponent({
   props: {
@@ -454,7 +464,7 @@ const SectionTitle = defineComponent({
   setup(props) {
     return () =>
       h('div', { class: ['section-title', `is-${props.tone}`] }, [
-        h('span', { 'aria-hidden': 'true' }),
+        h('span', { class: 'section-title-marker', 'aria-hidden': 'true' }),
         h('h2', props.title)
       ]);
   }
@@ -507,6 +517,38 @@ const preferences = [
   }
 ];
 
+const locationOptions = [
+  'Caracas, Distrito Capital',
+  'Maracaibo, Zulia',
+  'Valencia, Carabobo',
+  'Barquisimeto, Lara',
+  'San Cristóbal, Táchira'
+];
+
+const countryCodeOptions = [
+  { label: '+58', value: '+58' },
+  { label: '+57', value: '+57' },
+  { label: '+1', value: '+1' },
+  { label: '+34', value: '+34' },
+  { label: '+51', value: '+51' },
+  { label: '+56', value: '+56' }
+];
+
+const reviewIcons = {
+  calendar:
+    '<svg viewBox="0 0 24 24"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg>',
+  contact:
+    '<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  phone:
+    '<svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.8a2 2 0 0 1-.4 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>',
+  location:
+    '<svg viewBox="0 0 24 24"><path d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  value:
+    '<svg viewBox="0 0 24 24"><path d="M12 2v20M17 6.5c-.9-.9-2.4-1.5-4-1.5-2.4 0-4 1.1-4 2.8 0 4.4 8.5 1.8 8.5 6.9 0 1.9-1.8 3.3-4.6 3.3-2 0-3.7-.7-4.9-1.8"/></svg>',
+  title:
+    '<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h12M4 18h9"/></svg>'
+};
+
 const verificationItems = [
   'La descripción evita datos sensibles innecesarios.',
   'La ubicación permite coordinar sin exponer a nadie.',
@@ -521,9 +563,11 @@ const sidebarTrustItems = [
 
 const currentStep = ref(1);
 const submitted = ref(false);
+const isPublishing = ref(false);
 const highestUnlockedStep = ref(1);
 const errorFocusField = ref('');
 const errors = reactive({});
+const errorTimers = new Map();
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 const todayIso = toIsoDate(today);
@@ -538,6 +582,7 @@ const form = reactive({
   deadline: '',
   description: '',
   contactName: '',
+  countryCode: '+58',
   phone: '',
   location: '',
   preference: 'Chat Interno'
@@ -615,6 +660,35 @@ const formattedDeadline = computed(() => {
   return `${day}/${month}/${year}`;
 });
 
+const fullPhone = computed(() => {
+  if (!form.phone) return '';
+  return `${form.countryCode} ${form.phone}`;
+});
+
+const currentCategory = computed(() => categories.find((category) => category.name === form.category) || categories[0]);
+
+const currentPreference = computed(
+  () => preferences.find((preference) => preference.name === form.preference) || preferences[0]
+);
+
+const previewMetaItems = computed(() => [
+  {
+    label: 'Ubicación',
+    value: form.location || 'Ubicación pendiente',
+    icon: reviewIcons.location
+  },
+  {
+    label: 'Valor',
+    value: form.value ? `$${form.value}` : 'Valor por definir',
+    icon: reviewIcons.value
+  },
+  {
+    label: 'Comunicación',
+    value: form.preference,
+    icon: currentPreference.value.icon
+  }
+]);
+
 const pageHeader = computed(() => {
   if (currentStep.value === 2) {
     return {
@@ -661,14 +735,14 @@ const asideImage = computed(() => {
 });
 
 const reviewItems = computed(() => [
-  { label: 'Categoría', value: form.category },
-  { label: 'Título', value: form.title },
-  { label: 'Valor estimado', value: form.value ? `$${form.value}` : '' },
-  { label: 'Fecha límite', value: formattedDeadline.value },
-  { label: 'Contacto', value: form.contactName },
-  { label: 'Teléfono', value: form.phone },
-  { label: 'Ubicación', value: form.location },
-  { label: 'Comunicación', value: form.preference }
+  { label: 'Categoría', value: form.category, icon: currentCategory.value.icon },
+  { label: 'Título', value: form.title, icon: reviewIcons.title },
+  { label: 'Valor estimado', value: form.value ? `$${form.value}` : '', icon: reviewIcons.value },
+  { label: 'Fecha límite', value: formattedDeadline.value, icon: reviewIcons.calendar },
+  { label: 'Contacto', value: form.contactName, icon: reviewIcons.contact },
+  { label: 'Teléfono', value: fullPhone.value, icon: reviewIcons.phone },
+  { label: 'Ubicación', value: form.location, icon: reviewIcons.location },
+  { label: 'Comunicación', value: form.preference, icon: currentPreference.value.icon }
 ]);
 
 async function goToStep(step) {
@@ -713,14 +787,36 @@ async function previousStep() {
   await goToStep(Math.max(currentStep.value - 1, 1));
 }
 
-function publishPost() {
+function buildPublicationSummary() {
+  return {
+    category: form.category,
+    title: form.title,
+    value: form.value ? `$${form.value}` : 'Valor por definir',
+    deadline: formattedDeadline.value,
+    description: form.description,
+    contactName: form.contactName,
+    phone: fullPhone.value,
+    location: form.location,
+    preference: form.preference
+  };
+}
+
+async function publishPost() {
+  if (isPublishing.value) return;
+
   const valid = validateThroughStep(2);
   if (!valid) {
     focusFirstError();
     return;
   }
 
-  submitted.value = true;
+  isPublishing.value = true;
+  submitted.value = false;
+  sessionStorage.setItem('publicationSummary', JSON.stringify(buildPublicationSummary()));
+
+  window.setTimeout(() => {
+    router.push({ name: 'thank-you' });
+  }, 1800);
 }
 
 function isStepLocked(step) {
@@ -755,7 +851,8 @@ function isStepDataValid(step) {
   if (step === 2) {
     return Boolean(
       form.contactName.trim().length >= 2 &&
-        form.phone.replace(/\D/g, '').length >= 10 &&
+        form.countryCode &&
+        form.phone.replace(/\D/g, '').length >= 7 &&
         form.location &&
         form.preference
     );
@@ -765,9 +862,32 @@ function isStepDataValid(step) {
 }
 
 function clearError(field) {
+  window.clearTimeout(errorTimers.get(field));
+  errorTimers.delete(field);
+
   if (errors[field]) {
     delete errors[field];
   }
+}
+
+function handlePhoneInput(event) {
+  form.phone = event.target.value.replace(/\D/g, '');
+  clearError('phone');
+}
+
+function clearAllErrors() {
+  errorTimers.forEach((timer) => window.clearTimeout(timer));
+  errorTimers.clear();
+  Object.keys(errors).forEach((field) => delete errors[field]);
+}
+
+function scheduleErrorClear(field) {
+  window.clearTimeout(errorTimers.get(field));
+  const timer = window.setTimeout(() => {
+    delete errors[field];
+    errorTimers.delete(field);
+  }, 2000);
+  errorTimers.set(field, timer);
 }
 
 function setStepErrors(step) {
@@ -794,15 +914,17 @@ function setStepErrors(step) {
     else if (form.contactName.trim().length < 2) nextErrors.contactName = 'El nombre de contacto es demasiado corto.';
 
     const phoneDigits = form.phone.replace(/\D/g, '');
-    if (!form.phone.trim()) nextErrors.phone = 'Completa el número de teléfono antes de continuar.';
-    else if (phoneDigits.length < 10) nextErrors.phone = 'Ingresa un teléfono válido con código de área.';
+    if (!form.countryCode) nextErrors.phone = 'Selecciona el código de país.';
+    else if (!form.phone.trim()) nextErrors.phone = 'Completa el número de teléfono antes de continuar.';
+    else if (phoneDigits.length < 7) nextErrors.phone = 'Ingresa un teléfono válido.';
 
     if (!form.location) nextErrors.location = 'Selecciona una ubicación principal.';
     if (!form.preference) nextErrors.preference = 'Selecciona una preferencia de comunicación.';
   }
 
-  Object.keys(errors).forEach((field) => delete errors[field]);
+  clearAllErrors();
   Object.assign(errors, nextErrors);
+  Object.keys(nextErrors).forEach(scheduleErrorClear);
   return nextErrors;
 }
 
@@ -820,7 +942,7 @@ function validateThroughStep(step) {
     }
   }
 
-  Object.keys(errors).forEach((field) => delete errors[field]);
+  clearAllErrors();
   highestUnlockedStep.value = Math.max(highestUnlockedStep.value, step + 1);
   return true;
 }
@@ -842,9 +964,10 @@ async function focusFirstError() {
 }
 
 function scrollToPageStart() {
-  document.querySelector('.publication-shell')?.scrollIntoView({
+  window.scrollTo({
+    top: 0,
+    left: 0,
     behavior: 'smooth',
-    block: 'start'
   });
 }
 
@@ -874,9 +997,17 @@ function toggleMonthList() {
   showMonthList.value = !showMonthList.value;
 }
 
+function closeCalendar() {
+  isCalendarOpen.value = false;
+  showMonthList.value = false;
+}
+
 async function toggleCalendar() {
   isCalendarOpen.value = !isCalendarOpen.value;
-  if (!isCalendarOpen.value) return;
+  if (!isCalendarOpen.value) {
+    showMonthList.value = false;
+    return;
+  }
 
   await nextTick();
   const calendar = document.querySelector('.calendar-panel');
@@ -897,9 +1028,23 @@ function selectDate(day) {
   if (day.isPlaceholder) return;
   form.deadline = day.iso;
   clearError('deadline');
-  isCalendarOpen.value = false;
-  showMonthList.value = false;
+  closeCalendar();
 }
+
+function handleCalendarOutsideClick(event) {
+  if (!isCalendarOpen.value) return;
+
+  const dateField = document.querySelector('.date-field');
+  if (!dateField?.contains(event.target)) {
+    closeCalendar();
+  }
+}
+
+onMounted(() => document.addEventListener('pointerdown', handleCalendarOutsideClick));
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', handleCalendarOutsideClick);
+  clearAllErrors();
+});
 </script>
 
 <style scoped>
@@ -1109,15 +1254,25 @@ function selectDate(day) {
   gap: 0.75rem;
 }
 
-.section-title span {
+.section-title :deep(.section-title-marker) {
   width: 6px;
-  height: 32px;
+  min-width: 6px;
+  height: 34px;
+  display: block;
   border-radius: 999px;
   background: var(--color-va-blue);
 }
 
-.section-title.is-yellow span {
+.section-title.is-yellow :deep(.section-title-marker) {
   background: #fed721;
+}
+
+.section-title.is-blue :deep(.section-title-marker) {
+  background: var(--color-va-blue);
+}
+
+.section-title.is-red :deep(.section-title-marker) {
+  background: #b91c1c;
 }
 
 .section-title h2 {
@@ -1134,6 +1289,9 @@ function selectDate(day) {
 
 .category-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  position: relative;
+  margin-bottom: 0;
+  transition: margin-bottom 0.2s ease;
 }
 
 .category-grid.has-error,
@@ -1141,6 +1299,13 @@ function selectDate(day) {
   border-radius: 18px;
   outline: 2px solid rgba(245, 158, 11, 0.65);
   outline-offset: 4px;
+}
+
+.category-grid.has-error,
+.field-group.has-error,
+.preference-group.has-error {
+  margin-bottom: 3.35rem;
+  transition: margin-bottom 0.2s ease;
 }
 
 .category-option,
@@ -1231,10 +1396,27 @@ function selectDate(day) {
   gap: 1.5rem;
 }
 
+.phone-input-row {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.phone-input-row :deep(.custom-select-trigger) {
+  border-radius: 12px 12px 0 0;
+}
+
+.phone-input-row :deep(.custom-select-menu) {
+  min-width: 112px;
+}
+
 .field-group,
 .preference-group {
+  position: relative;
   display: grid;
   gap: 0.5rem;
+  margin-bottom: 0;
+  transition: margin-bottom 0.2s ease;
 }
 
 .date-field {
@@ -1250,7 +1432,20 @@ function selectDate(day) {
 }
 
 .field-group input,
-.field-group select,
+.field-group select {
+  width: 100%;
+  height: 58px;
+  border: 0;
+  border-bottom: 2px solid var(--color-va-line);
+  border-radius: 12px 12px 0 0;
+  background: var(--color-va-field);
+  color: var(--color-va-ink);
+  padding: 1rem;
+  font-size: 1rem;
+  line-height: 1.25;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
 .field-group textarea {
   width: 100%;
   border: 0;
@@ -1260,7 +1455,20 @@ function selectDate(day) {
   color: var(--color-va-ink);
   padding: 1rem;
   font-size: 1rem;
+  line-height: 1.5;
   transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.field-group input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.field-group input[type='number']::-webkit-inner-spin-button,
+.field-group input[type='number']::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .field-group.has-error input,
@@ -1272,42 +1480,13 @@ function selectDate(day) {
   box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
 }
 
-.field-error {
-  width: fit-content;
-  max-width: 100%;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius: 6px;
-  background: #f59e0b;
-  color: #ffffff;
-  padding: 0.55rem 0.8rem;
-  font-size: 0.86rem;
-  font-weight: 800;
-  line-height: 1.25;
-}
-
-.field-error span {
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  display: inline-grid;
-  place-items: center;
-  background: #ffffff;
-  color: #f59e0b;
-  font-family: var(--font-family);
-  font-size: 0.78rem;
-  letter-spacing: 0;
-  flex: 0 0 auto;
-}
-
 .is-shaking {
   animation: validationShake 0.46s ease both;
 }
 
 .date-trigger {
   width: 100%;
-  min-height: 58px;
+  height: 58px;
   border: 0;
   border-bottom: 2px solid var(--color-va-line);
   border-radius: 12px 12px 0 0;
@@ -1557,7 +1736,7 @@ function selectDate(day) {
 }
 
 .review-panel {
-  gap: 1.5rem;
+  gap: 1.35rem;
 }
 
 .review-panel .step-copy {
@@ -1568,26 +1747,18 @@ function selectDate(day) {
 .review-summary,
 .verification-card,
 .impact-strip {
-  border: 1px solid rgba(196, 198, 211, 0.22);
-  background: #edf4ff;
-  box-shadow: 0 18px 36px -28px rgba(34, 65, 146, 0.35);
+  border: 1px solid rgba(34, 65, 146, 0.1);
+  background: rgba(237, 244, 255, 0.92);
+  box-shadow: none;
 }
 
 .publication-preview {
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 10px;
+  padding: 1.35rem 1.5rem;
   display: grid;
-  gap: 1rem;
+  gap: 0.95rem;
   position: relative;
   overflow: hidden;
-}
-
-.publication-preview::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 6px;
-  background: #fed721;
 }
 
 .preview-header,
@@ -1603,19 +1774,26 @@ function selectDate(day) {
   justify-content: space-between;
 }
 
-.preview-header span,
-.preview-meta span {
+.preview-badge,
+.preview-meta > span {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
   color: var(--color-va-blue);
-  padding: 0.4rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
   font-size: 0.82rem;
   font-weight: 800;
 }
 
 .preview-header strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   color: var(--color-text-muted);
   font-size: 0.9rem;
+  font-weight: 800;
 }
 
 .publication-preview h3,
@@ -1624,6 +1802,10 @@ function selectDate(day) {
   color: var(--color-va-ink);
   font-size: 1.25rem;
   line-height: 1.3;
+}
+
+.publication-preview h3 {
+  font-size: clamp(1.25rem, 2.2vw, 1.45rem);
 }
 
 .publication-preview p {
@@ -1639,10 +1821,10 @@ function selectDate(day) {
 
 .review-summary,
 .verification-card {
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 10px;
+  padding: 1.45rem 1.5rem 1.15rem;
   display: grid;
-  gap: 0.85rem;
+  gap: 0.75rem;
 }
 
 .verification-card,
@@ -1651,10 +1833,11 @@ function selectDate(day) {
 }
 
 .review-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1fr);
+  align-items: center;
   gap: 1rem;
-  padding: 0.8rem 0;
+  padding: 0.88rem 0;
   background: transparent;
   border-bottom: 1px solid rgba(196, 198, 211, 0.22);
 }
@@ -1663,7 +1846,10 @@ function selectDate(day) {
   border-bottom: 0;
 }
 
-.review-row span {
+.review-row > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
   color: var(--color-text-muted);
   font-size: 0.9rem;
 }
@@ -1671,6 +1857,27 @@ function selectDate(day) {
 .review-row strong {
   color: var(--color-va-ink);
   text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.review-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  display: inline-grid;
+  place-items: center;
+  color: currentColor;
+  flex: 0 0 auto;
+}
+
+.review-icon :deep(svg) {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .verification-row {
@@ -1772,6 +1979,12 @@ function selectDate(day) {
   color: #ffffff;
   background: linear-gradient(165deg, var(--color-va-blue), var(--color-va-blue-soft));
   box-shadow: 0 20px 25px -16px rgba(34, 65, 146, 0.6);
+}
+
+.primary-action:disabled {
+  cursor: wait;
+  opacity: 0.74;
+  transform: none;
 }
 
 .ghost-action svg,
@@ -2039,6 +2252,7 @@ function selectDate(day) {
   .publication-aside,
   .review-grid,
   .step-one-support,
+  .phone-input-row,
   .two-column {
     grid-template-columns: 1fr;
   }
