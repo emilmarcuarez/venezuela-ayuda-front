@@ -51,6 +51,55 @@ Arrancar la plataforma para visualizarla:
 
 4. ¡Y listo! Abre tu navegador en la URL que indique la consola (generalmente `http://localhost:5173/`).
 
+### Correr en WSL
+
+Requisitos:
+
+```bash
+node -v
+npm -v
+```
+
+Este repo fue probado en WSL con Node `v22.22.2` y npm `10.9.7`.
+
+Instalación:
+
+```bash
+npm install
+```
+
+Modo desarrollo:
+
+```bash
+npm run dev -- --host 0.0.0.0
+```
+
+URL local:
+
+```text
+http://localhost:5173/
+```
+
+Build de producción:
+
+```bash
+npm run build
+```
+
+Servir el build localmente:
+
+```bash
+npm start
+```
+
+URL local del build:
+
+```text
+http://localhost:4173/
+```
+
+Nota: `npm start` usa `vite preview` para probar el build local. Para producción real, sirve la carpeta `dist/` con Nginx, Apache, Caddy, Docker, Vercel, Netlify u otro servidor estático.
+
 ## 📂 Arquitectura de Carpetas
 
 ```text
