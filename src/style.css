@@ -14,6 +14,14 @@
   --color-yellow-hover: #d97706;
   --color-border: #e2e8f0;
   --color-border-active: #3b5998;
+  --color-va-blue: #224192;
+  --color-va-blue-soft: #3d5aab;
+  --color-va-blue-wash: #edf4ff;
+  --color-va-ink: #051d30;
+  --color-va-panel: #ffffff;
+  --color-va-field: #f7f9ff;
+  --color-va-line: rgba(196, 198, 211, 0.3);
+  --shadow-va-soft: 0 32px 64px -12px rgba(34, 65, 146, 0.08);
 }
 
 * {
@@ -35,4 +43,24 @@ body {
   width: 100%;
   display: flex;
   flex-direction: column;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+label,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input,
+select,
+textarea,
+button {
+  outline-color: var(--color-va-blue);
 }

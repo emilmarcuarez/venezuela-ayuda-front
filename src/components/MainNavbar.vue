@@ -23,14 +23,14 @@
       <div class="nav-menu" :class="{ 'is-open': isMobileMenuOpen }">
         <div class="menu-content">
           <div class="nav-links">
-            <a href="#" class="active">Inicio</a>
+            <RouterLink to="/" :class="{ active: route.name === 'home' }">Inicio</RouterLink>
             <a href="#">Nosotros</a>
-            <a href="#">Peticiones</a>
+            <RouterLink to="/crear-publicacion" :class="{ active: route.name === 'create-publication' }">Peticiones</RouterLink>
             <a href="#">Transparencia</a>
           </div>
 
           <div class="nav-actions">
-            <button class="btn btn-primary">Donar Ahora</button>
+            <RouterLink to="/crear-publicacion" class="btn btn-primary">Donar Ahora</RouterLink>
             <button class="icon-btn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" class="feather feather-power">
@@ -47,8 +47,10 @@
 
 <script setup>
 import { ref, watch, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 
 const isMobileMenuOpen = ref(false);
+const route = useRoute();
 
 watch(isMobileMenuOpen, (isOpen) => {
   if (isOpen) {
@@ -174,6 +176,7 @@ onUnmounted(() => {
   font-size: 0.95rem;
   cursor: pointer;
   border: none;
+  text-decoration: none;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
