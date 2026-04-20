@@ -815,7 +815,11 @@ async function publishPost() {
   sessionStorage.setItem('publicationSummary', JSON.stringify(buildPublicationSummary()));
 
   window.setTimeout(() => {
-    router.push({ name: 'thank-you' });
+    if (form.preference === 'Chat Interno') {
+      router.push({ name: 'chat' });
+    } else {
+      router.push({ name: 'thank-you' });
+    }
   }, 1800);
 }
 
