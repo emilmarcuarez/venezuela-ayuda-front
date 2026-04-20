@@ -1,0 +1,28 @@
+{
+    "solicitante": {
+        "nombre": "Carlos",
+        "estado": "Conectado y Seguro"
+    },
+    "donacion": {
+        "titulo": "Kit de Suministros Médicos Críticos",
+        "urgencia": "URGENTE",
+        "asegurado": 85
+    },
+    "mensajes": [
+        {
+            "id": 1,
+            "autor": "Carlos",
+            "texto": "Hola Alejandro...",
+            "hora": "10:42 AM",
+            "esMio": false
+        },
+        {
+            "id": 2,
+            "autor": "Yo",
+            "texto": "Los tengo listos...",
+            "hora": "10:45 AM",
+            "esMio": true,
+            "visto": true
+        }
+    ]
+}

@@ -3,6 +3,7 @@ import LoginView from './views/LoginView.vue';
 import HomeView from './views/HomeView.vue';
 import CreatePublicationView from './views/CreatePublicationView.vue';
 import ThankYouView from './views/ThankYouView.vue';
+import ChatView from './components/ChatView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -10,7 +11,9 @@ const router = createRouter({
     { path: '/', name: 'home', component: HomeView },
     { path: '/login', name: 'login', component: LoginView },
     { path: '/crear-publicacion', name: 'create-publication', component: CreatePublicationView },
-    { path: '/thank-you', name: 'thank-you', component: ThankYouView }
+    { path: '/thank-you', name: 'thank-you', component: ThankYouView },
+    { path: '/chat', name: 'chat', component: ChatView },
+    { path: '/perfil', name: 'profile', component: () => import('./views/UserProfileView.vue') }
   ]
 });
 

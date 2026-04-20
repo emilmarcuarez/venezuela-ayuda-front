@@ -25,19 +25,41 @@
           <div class="nav-links">
             <RouterLink to="/" :class="{ active: route.name === 'home' }">Inicio</RouterLink>
             <a href="#">Nosotros</a>
-            <RouterLink to="/crear-publicacion" :class="{ active: route.name === 'create-publication' }">Peticiones</RouterLink>
+            <RouterLink to="/crear-publicacion" :class="{ active: route.name === 'create-publication' }">Peticiones
+            </RouterLink>
             <a href="#">Transparencia</a>
           </div>
 
           <div class="nav-actions">
             <RouterLink to="/crear-publicacion" class="btn btn-primary">Donar Ahora</RouterLink>
-            <button class="icon-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" class="feather feather-power">
-                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-                <line x1="12" y1="2" x2="12" y2="12"></line>
-              </svg>
-            </button>
+            
+            <div class="profile-dropdown-wrapper">
+              <button class="icon-btn profile-btn" @click.stop="toggleDropdown">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </button>
+              
+              <div v-if="isDropdownOpen" class="dropdown-menu">
+                <a href="#" class="dropdown-item" @click.prevent="goToProfile">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  Perfil
+                </a>
+                <a href="#" class="dropdown-item" @click.prevent="logout">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                  Cerrar Sesión
+                </a>
+              </div>
+            </div>
+            
           </div>
         </div>
       </div>
@@ -46,11 +68,38 @@
 </template>
 
 <script setup>
-import { ref, watch, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, watch, onUnmounted, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const isMobileMenuOpen = ref(false);
+const isDropdownOpen = ref(false);
 const route = useRoute();
+const router = useRouter();
+
+const toggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value;
+};
+
+const goToProfile = () => {
+  isDropdownOpen.value = false;
+  router.push({ name: 'profile' });
+};
+
+const logout = () => {
+  isDropdownOpen.value = false;
+  // Handle logout logic here, for now go to login
+  router.push({ name: 'login' });
+};
+
+const closeDropdown = (e) => {
+  if (!e.target.closest('.profile-dropdown-wrapper')) {
+    isDropdownOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', closeDropdown);
+});
 
 watch(isMobileMenuOpen, (isOpen) => {
   if (isOpen) {
@@ -61,6 +110,7 @@ watch(isMobileMenuOpen, (isOpen) => {
 });
 
 onUnmounted(() => {
+  document.addEventListener('click', closeDropdown);
   document.body.style.overflow = '';
 });
 </script>
@@ -77,12 +127,12 @@ onUnmounted(() => {
 }
 
 .nav-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
 }
 
 .logo {
@@ -192,6 +242,49 @@ onUnmounted(() => {
   box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
 }
 
+.profile-dropdown-wrapper {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: slideDown 0.2s ease forwards;
+  transform-origin: top right;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.dropdown-item {
+  padding: 0.75rem 1rem;
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
 .icon-btn {
   background: none;
   border: none;
@@ -225,6 +318,10 @@ onUnmounted(() => {
 }
 
 @media (max-width: 992px) {
+  .nav-container {
+    padding: 0 1.5rem;
+  }
+
   .mobile-toggle {
     display: block;
     z-index: 1000;
@@ -234,33 +331,26 @@ onUnmounted(() => {
     display: block;
     position: fixed;
     top: 76px;
-    /* Right beneath the navbar */
     left: 0;
     width: 100%;
     height: calc(100vh - 76px);
-    /* Cover the entire screen below */
     background-color: rgba(2, 6, 23, 0.4);
-    /* Transparent Overlay */
     backdrop-filter: blur(4px);
     clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-    /* Hidden */
     transition: clip-path 0.4s ease-in-out;
     overflow-y: auto;
   }
 
   .nav-menu.is-open {
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-    /* Revealed */
   }
 
   .menu-content {
     background-color: #020617;
-    /* Solid dark box up to buttons */
     flex-direction: column;
     padding: 3rem 2rem;
     gap: 2rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    /* Clean border at the end of the menu */
   }
 
   .nav-links {
@@ -276,11 +366,57 @@ onUnmounted(() => {
   .nav-actions {
     flex-direction: column;
     width: 100%;
+    gap: 1.5rem;
   }
 
   .btn {
     width: 100%;
     text-align: center;
+  }
+
+  .profile-dropdown-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .profile-btn {
+    width: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    height: 48px;
+    margin-top: 0.5rem;
+  }
+
+  .profile-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .dropdown-menu {
+    position: static;
+    width: 100%;
+    margin-top: 1rem;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    align-items: center;
+    gap: 0.5rem;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .dropdown-item {
+    font-size: 1.1rem;
+    padding: 0.8rem 1rem;
+    justify-content: center;
+    width: 100%;
+    border-radius: 12px;
   }
 }
 </style>
