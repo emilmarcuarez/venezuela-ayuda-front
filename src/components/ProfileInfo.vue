@@ -9,15 +9,15 @@
           </div>
         </div>
         <div class="user-details">
-          <h1 class="user-name">Alejandro M.</h1>
+          <h1 class="user-name">{{ displayName }}</h1>
           <div class="verified-badge">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
               <path
                 d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
             </svg>
-            Donante Verificado
+            {{ accountLabel }}
           </div>
-          <p class="donations-count">12 donaciones realizadas</p>
+          <p class="donations-count">{{ userForm.email }}</p>
         </div>
       </div>
 
@@ -48,32 +48,68 @@
     <section class="info-section">
       <h2 class="section-title">Información Personal</h2>
       <div class="info-card">
+        <p v-if="isLoading" class="profile-status">Cargando datos de sesión...</p>
+        <p v-else-if="errorMessage" class="profile-status is-error">{{ errorMessage }}</p>
+        <p v-else-if="successMessage" class="profile-status is-success">{{ successMessage }}</p>
         <div class="info-grid">
-          <div class="info-field">
-            <label>NOMBRE COMPLETO</label>
-            <div v-if="!isEditing" class="field-value">{{ userForm.name }}</div>
-            <input v-else v-model="userForm.name" class="edit-input" type="text" />
-          </div>
+          <template v-if="userForm.accountType === 'ORGANIZATION'">
+            <div class="info-field">
+              <label>NOMBRE DE LA ORGANIZACIÓN</label>
+              <div v-if="!isEditing" class="field-value">{{ userForm.organizationName || 'No especificado' }}</div>
+              <input v-else v-model="userForm.organizationName" class="edit-input" type="text" />
+            </div>
+          </template>
+          <template v-else>
+            <div class="info-field">
+              <label>NOMBRE</label>
+              <div v-if="!isEditing" class="field-value">{{ userForm.firstName || 'No especificado' }}</div>
+              <input v-else v-model="userForm.firstName" class="edit-input" type="text" />
+            </div>
+            <div class="info-field">
+              <label>APELLIDO</label>
+              <div v-if="!isEditing" class="field-value">{{ userForm.lastName || 'No especificado' }}</div>
+              <input v-else v-model="userForm.lastName" class="edit-input" type="text" />
+            </div>
+          </template>
+
           <div class="info-field">
             <label>CORREO ELECTRÓNICO</label>
-            <div v-if="!isEditing" class="field-value">{{ userForm.email }}</div>
-            <input v-else v-model="userForm.email" class="edit-input" type="email" />
+            <div class="field-value">{{ userForm.email }}</div>
           </div>
           <div class="info-field">
             <label>NÚMERO DE TELÉFONO</label>
             <div v-if="!isEditing" class="field-value">{{ userForm.phone }}</div>
             <input v-else v-model="userForm.phone" class="edit-input" type="tel" />
           </div>
+
+          <div class="info-field" style="grid-column: 1 / -1;">
+            <label>BIOGRAFÍA / DESCRIPCIÓN</label>
+            <div v-if="!isEditing" class="field-value">{{ userForm.bio || 'Sin descripción' }}</div>
+            <textarea v-else v-model="userForm.bio" class="edit-input edit-textarea" rows="3"></textarea>
+          </div>
+
           <div class="info-field">
-            <label>UBICACIÓN</label>
-            <div v-if="!isEditing" class="field-value">{{ userForm.location }}</div>
-            <input v-else v-model="userForm.location" class="edit-input" type="text" />
+            <label>CIUDAD</label>
+            <div v-if="!isEditing" class="field-value">{{ userForm.city || 'No especificada' }}</div>
+            <input v-else v-model="userForm.city" class="edit-input" type="text" />
+          </div>
+          <div class="info-field">
+            <label>ESTADO / PROVINCIA</label>
+            <div v-if="!isEditing" class="field-value">{{ userForm.state || 'No especificado' }}</div>
+            <input v-else v-model="userForm.state" class="edit-input" type="text" />
+          </div>
+          <div class="info-field">
+            <label>PAÍS</label>
+            <div v-if="!isEditing" class="field-value">{{ userForm.country || 'No especificado' }}</div>
+            <input v-else v-model="userForm.country" class="edit-input" type="text" />
           </div>
         </div>
 
         <div v-if="isEditing" class="edit-actions">
-          <button class="btn-cancel" @click="cancelEdit">Cancelar</button>
-          <button class="btn-save" @click="saveEdit">Guardar Cambios</button>
+          <button class="btn-cancel" @click="cancelEdit" :disabled="isSaving">Cancelar</button>
+          <button class="btn-save" @click="saveEdit" :disabled="isSaving">
+            {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
+          </button>
         </div>
       </div>
     </section>
@@ -81,28 +117,117 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { authState, loadCurrentUser, updateProfile } from '../services/auth';
 
 const isEditing = ref(false);
+const isLoading = ref(false);
+const isSaving = ref(false);
+const errorMessage = ref('');
+const successMessage = ref('');
 
 const userForm = reactive({
-  name: 'Alejandro Mendoza',
-  email: 'alejandro.m@example.com',
-  phone: '+58 414 123 4567',
-  location: 'Caracas, Venezuela'
+  firstName: '',
+  lastName: '',
+  organizationName: '',
+  email: '',
+  phone: '',
+  bio: '',
+  city: '',
+  state: '',
+  country: '',
+  accountType: 'PERSON'
 });
 
 const originalData = { ...userForm };
+const displayName = computed(() => {
+  if (userForm.accountType === 'ORGANIZATION' && userForm.organizationName) {
+    return userForm.organizationName;
+  }
+  if (userForm.firstName || userForm.lastName) {
+    return `${userForm.firstName || ''} ${userForm.lastName || ''}`.trim();
+  }
+  return userForm.email || 'Usuario';
+});
+
+const accountLabel = computed(() => {
+  return authState.user?.accountType === 'ORGANIZATION'
+    ? 'Organización Verificada'
+    : 'Donante Verificado';
+});
+
+const syncUserForm = (user) => {
+  if (!user) return;
+
+  const nextData = {
+    firstName: user.firstName || '',
+    lastName: user.lastName || '',
+    organizationName: user.organizationName || '',
+    email: user.email || '',
+    phone: user.phone || 'No registrado',
+    bio: user.bio || '',
+    city: user.city || '',
+    state: user.state || '',
+    country: user.country || '',
+    accountType: user.accountType || 'PERSON'
+  };
+
+  Object.assign(userForm, nextData);
+  Object.assign(originalData, nextData);
+};
 
 const cancelEdit = () => {
   Object.assign(userForm, originalData);
   isEditing.value = false;
+  errorMessage.value = '';
+  successMessage.value = '';
 };
 
-const saveEdit = () => {
-  Object.assign(originalData, userForm);
-  isEditing.value = false;
+const saveEdit = async () => {
+  isSaving.value = true;
+  errorMessage.value = '';
+  successMessage.value = '';
+
+  try {
+    const payload = {
+      firstName: userForm.firstName,
+      lastName: userForm.lastName,
+      phone: userForm.phone,
+      bio: userForm.bio,
+      city: userForm.city,
+      state: userForm.state,
+      country: userForm.country,
+      organizationName: userForm.organizationName
+    };
+    
+    const updatedUser = await updateProfile(payload);
+    syncUserForm(updatedUser);
+    isEditing.value = false;
+    successMessage.value = 'Perfil actualizado exitosamente.';
+    
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 3000);
+  } catch (error) {
+    errorMessage.value = error.message || 'Error al actualizar el perfil.';
+  } finally {
+    isSaving.value = false;
+  }
 };
+
+onMounted(async () => {
+  isLoading.value = true;
+  errorMessage.value = '';
+
+  try {
+    const user = await loadCurrentUser();
+    syncUserForm(user || authState.user);
+  } catch (error) {
+    errorMessage.value = error.message || 'No se pudieron cargar los datos de sesión.';
+  } finally {
+    isLoading.value = false;
+  }
+});
 </script>
 
 <style scoped>
@@ -274,6 +399,20 @@ const saveEdit = () => {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
 }
 
+.profile-status {
+  color: #475569;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+
+.profile-status.is-error {
+  color: #b91c1c;
+}
+
+.profile-status.is-success {
+  color: #16a34a;
+}
+
 .info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -314,6 +453,11 @@ const saveEdit = () => {
 .edit-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.edit-textarea {
+  resize: vertical;
+  min-height: 80px;
 }
 
 .edit-actions {

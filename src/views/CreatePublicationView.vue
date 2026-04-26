@@ -11,45 +11,47 @@
         </p>
       </section>
 
-      <nav class="publication-stepper" aria-label="Progreso de creación">
-        <template v-for="(item, index) in steps" :key="item.label">
-          <button
-            class="stepper-item"
-            :class="{
-              'is-active': currentStep === index + 1,
-              'is-complete': currentStep > index + 1,
-              'is-locked': isStepLocked(index + 1)
-            }"
-            type="button"
-            :aria-current="currentStep === index + 1 ? 'step' : undefined"
-            :aria-disabled="isStepLocked(index + 1)"
-            @click="requestStep(index + 1)"
-          >
-            <span class="stepper-dot">
-              <svg v-if="isStepLocked(index + 1)" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M7 10V8a5 5 0 0 1 10 0v2M6 10h12v10H6V10Z" />
-              </svg>
-              <svg v-else-if="currentStep > index + 1" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-              <span v-else>{{ index + 1 }}</span>
-            </span>
-            <span>{{ item.label }}</span>
-          </button>
-          <span
-            v-if="index < steps.length - 1"
-            class="stepper-line"
-            :class="{ 'is-filled': currentStep > index + 1 }"
-            aria-hidden="true"
-          ></span>
-        </template>
-      </nav>
+      <div class="publication-access-frame" :class="{ 'is-auth-locked': isAuthLocked }">
+        <nav class="publication-stepper" aria-label="Progreso de creación">
+          <template v-for="(item, index) in steps" :key="item.label">
+            <button
+              class="stepper-item"
+              :class="{
+                'is-active': currentStep === index + 1,
+                'is-complete': currentStep > index + 1,
+                'is-locked': isStepLocked(index + 1)
+              }"
+              type="button"
+              :aria-current="currentStep === index + 1 ? 'step' : undefined"
+              :aria-disabled="isStepLocked(index + 1) || isAuthLocked"
+              @click="requestStep(index + 1)"
+            >
+              <span class="stepper-dot">
+                <svg v-if="isStepLocked(index + 1)" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M7 10V8a5 5 0 0 1 10 0v2M6 10h12v10H6V10Z" />
+                </svg>
+                <svg v-else-if="currentStep > index + 1" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                <span v-else>{{ index + 1 }}</span>
+              </span>
+              <span>{{ item.label }}</span>
+            </button>
+            <span
+              v-if="index < steps.length - 1"
+              class="stepper-line"
+              :class="{ 'is-filled': currentStep > index + 1 }"
+              aria-hidden="true"
+            ></span>
+          </template>
+        </nav>
 
-      <form
-        class="publication-grid"
-        :class="{ 'is-step-one': currentStep === 1, 'is-review-layout': currentStep === 3 }"
-        @submit.prevent="publishPost"
-      >
+        <form
+          class="publication-grid"
+          :class="{ 'is-step-one': currentStep === 1, 'is-review-layout': currentStep === 3 }"
+          :aria-hidden="isAuthLocked"
+          @submit.prevent="publishPost"
+        >
         <section class="publication-card" aria-live="polite">
           <div v-if="currentStep === 1" class="step-panel">
             <SectionTitle tone="yellow" title="Elige una Categoría" />
@@ -429,7 +431,33 @@
             <blockquote>{{ asideImage.quote }}</blockquote>
           </div>
         </aside>
-      </form>
+        </form>
+
+        <section v-if="isAuthLocked" class="auth-lock-modal" role="dialog" aria-modal="true" aria-labelledby="auth-lock-title">
+          <div class="auth-lock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3 4 7v5c0 5 3.4 8.2 8 9 4.6-.8 8-4 8-9V7l-8-4Z" />
+              <path d="M9.5 12.5 11.2 14 15 10" />
+            </svg>
+          </div>
+          <p class="auth-lock-kicker">Cuenta requerida</p>
+          <h2 id="auth-lock-title">Inicia sesión para publicar con confianza</h2>
+          <p>
+            Protegemos cada solicitud para que la ayuda llegue mejor. Entra o crea tu cuenta y esta vista se desbloquea al instante.
+          </p>
+          <div class="auth-lock-actions">
+            <button type="button" class="auth-lock-primary" @click="goToLogin">
+              Iniciar sesión
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14m-7-7 7 7-7 7" />
+              </svg>
+            </button>
+            <button type="button" class="auth-lock-secondary" @click="goToRegister">
+              Crear cuenta
+            </button>
+          </div>
+        </section>
+      </div>
     </main>
 
     <PublishingLoader
@@ -444,7 +472,7 @@
 
 <script setup>
 import { computed, defineComponent, h, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import communityHandsImage from '../assets/community-hands.png';
 import handshakeWindowImage from '../assets/handshake-window.jpg';
 import hopeCommunityImage from '../assets/impacto-movimiento.png';
@@ -453,8 +481,10 @@ import MainFooter from '../components/MainFooter.vue';
 import MainNavbar from '../components/MainNavbar.vue';
 import PublishingLoader from '../components/PublishingLoader.vue';
 import ValidationMessage from '../components/ValidationMessage.vue';
+import { isAuthenticated } from '../services/auth';
 
 const router = useRouter();
+const route = useRoute();
 
 const SectionTitle = defineComponent({
   props: {
@@ -744,6 +774,27 @@ const reviewItems = computed(() => [
   { label: 'Ubicación', value: form.location, icon: reviewIcons.location },
   { label: 'Comunicación', value: form.preference, icon: currentPreference.value.icon }
 ]);
+const isAuthLocked = computed(() => !isAuthenticated());
+
+function goToLogin() {
+  router.push({
+    name: 'login',
+    query: {
+      redirect: route.fullPath,
+      mode: 'login'
+    }
+  });
+}
+
+function goToRegister() {
+  router.push({
+    name: 'login',
+    query: {
+      redirect: route.fullPath,
+      mode: 'register'
+    }
+  });
+}
 
 async function goToStep(step) {
   currentStep.value = step;
@@ -755,6 +806,7 @@ async function goToStep(step) {
 }
 
 async function requestStep(step) {
+  if (isAuthLocked.value) return;
   if (step === currentStep.value) return;
 
   if (step < currentStep.value) {
@@ -772,6 +824,7 @@ async function requestStep(step) {
 }
 
 async function nextStep() {
+  if (isAuthLocked.value) return;
   submitted.value = false;
   const valid = validateStep(currentStep.value);
   if (!valid) {
@@ -802,6 +855,7 @@ function buildPublicationSummary() {
 }
 
 async function publishPost() {
+  if (isAuthLocked.value) return;
   if (isPublishing.value) return;
 
   const valid = validateThroughStep(2);
@@ -1063,6 +1117,142 @@ onBeforeUnmount(() => {
   width: min(100%, 1280px);
   margin: 0 auto;
   padding: 5rem 2rem 6rem;
+}
+
+.publication-access-frame {
+  position: relative;
+}
+
+.publication-access-frame.is-auth-locked .publication-stepper,
+.publication-access-frame.is-auth-locked .publication-grid {
+  filter: blur(10px) saturate(0.88);
+  opacity: 0.58;
+  pointer-events: none;
+  user-select: none;
+}
+
+.publication-access-frame.is-auth-locked::before {
+  content: '';
+  position: absolute;
+  inset: -2rem -1rem;
+  z-index: 8;
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 50% 6%, rgba(56, 189, 248, 0.16), transparent 32%),
+    rgba(247, 249, 255, 0.46);
+  backdrop-filter: blur(2px);
+}
+
+.auth-lock-modal {
+  position: absolute;
+  z-index: 9;
+  left: 50%;
+  top: 7rem;
+  width: min(92vw, 520px);
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(237, 244, 255, 0.92)),
+    rgba(255, 255, 255, 0.86);
+  box-shadow:
+    0 32px 70px -26px rgba(5, 29, 48, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  padding: clamp(1.6rem, 4vw, 2.4rem);
+  text-align: center;
+}
+
+.auth-lock-icon {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 1rem;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: linear-gradient(145deg, var(--color-va-blue), #0ea5e9);
+  box-shadow: 0 18px 32px -18px rgba(34, 65, 146, 0.7);
+}
+
+.auth-lock-icon svg {
+  width: 34px;
+  height: 34px;
+}
+
+.auth-lock-icon path,
+.auth-lock-primary path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.auth-lock-kicker {
+  color: var(--color-va-blue);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.auth-lock-modal h2 {
+  color: var(--color-va-ink);
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+  line-height: 1.08;
+  margin-bottom: 0.9rem;
+}
+
+.auth-lock-modal p:not(.auth-lock-kicker) {
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  margin: 0 auto;
+  max-width: 430px;
+}
+
+.auth-lock-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-top: 1.6rem;
+}
+
+.auth-lock-primary,
+.auth-lock-secondary {
+  min-height: 50px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.auth-lock-primary {
+  color: #ffffff;
+  background: linear-gradient(165deg, var(--color-va-blue), var(--color-va-blue-soft));
+  box-shadow: 0 18px 28px -18px rgba(34, 65, 146, 0.8);
+}
+
+.auth-lock-secondary {
+  color: var(--color-va-blue);
+  background: #ffffff;
+  border: 1px solid rgba(34, 65, 146, 0.16);
+}
+
+.auth-lock-primary:hover,
+.auth-lock-secondary:hover {
+  transform: translateY(-2px);
+}
+
+.auth-lock-primary svg {
+  width: 18px;
+  height: 18px;
 }
 
 .publication-hero {
@@ -2232,6 +2422,14 @@ onBeforeUnmount(() => {
 @media (max-width: 760px) {
   .publication-shell {
     padding: 3rem 1rem 4rem;
+  }
+
+  .auth-lock-modal {
+    top: 5.5rem;
+  }
+
+  .auth-lock-actions {
+    grid-template-columns: 1fr;
   }
 
   .publication-stepper {

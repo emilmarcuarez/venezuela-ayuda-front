@@ -2,14 +2,34 @@
   <section class="right-panel">
     <div class="form-container">
       <header class="form-header">
-        <h2>Crea tu cuenta</h2>
-        <p>Comienza a marcar la diferencia en minutos.</p>
+        <h2>{{ isLoginMode ? 'Inicia sesión' : 'Crea tu cuenta' }}</h2>
+        <p>{{ isLoginMode ? 'Entra para continuar ayudando desde tu perfil.' : 'Comienza a marcar la diferencia en minutos.' }}</p>
       </header>
 
-      <div class="account-types">
+      <div class="auth-tabs" role="tablist" aria-label="Acceso">
+        <button
+          type="button"
+          class="auth-tab"
+          :class="{ active: mode === 'login' }"
+          @click="mode = 'login'"
+        >
+          Iniciar sesión
+        </button>
+        <button
+          type="button"
+          class="auth-tab"
+          :class="{ active: mode === 'register' }"
+          @click="mode = 'register'"
+        >
+          Registrarse
+        </button>
+      </div>
+
+      <div v-if="!isLoginMode" class="account-types">
         <button 
           class="type-btn" 
           :class="{ active: accountType === 'persona' }"
+          type="button"
           @click="accountType = 'persona'"
         >
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -18,6 +38,7 @@
         <button 
           class="type-btn" 
           :class="{ active: accountType === 'organizacion' }"
+          type="button"
           @click="accountType = 'organizacion'"
         >
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
@@ -25,7 +46,11 @@
         </button>
       </div>
 
-      <SignUpForm />
+      <SignUpForm
+        :mode="mode"
+        :account-type="accountType"
+        @loading-change="emit('auth-loading-change', $event)"
+      />
 
       <div class="divider">
         <span>O CONTINÚA CON</span>
@@ -33,7 +58,7 @@
 
       <SocialLogin />
 
-      <p class="bottom-text">Comienza a marcar la diferencia en minutos.</p>
+      <p class="bottom-text">Tu sesión se mantiene activa durante 24 horas.</p>
     </div>
 
     <footer class="footer">
@@ -50,11 +75,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import SignUpForm from './SignUpForm.vue';
 import SocialLogin from './SocialLogin.vue';
 
+const emit = defineEmits(['auth-loading-change']);
+const route = useRoute();
+const mode = ref(route.query.mode === 'register' ? 'register' : 'login');
 const accountType = ref('persona');
+const isLoginMode = computed(() => mode.value === 'login');
+
+watch(
+  () => route.query.mode,
+  (nextMode) => {
+    mode.value = nextMode === 'register' ? 'register' : 'login';
+  }
+);
 </script>
 
 <style scoped>
@@ -92,6 +129,34 @@ const accountType = ref('persona');
 .form-header p {
   color: var(--color-text-muted);
   font-size: 0.95rem;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.35rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #ffffff;
+  margin-bottom: 1.5rem;
+}
+
+.auth-tab {
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.auth-tab.active {
+  background: #0ea5e9;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
 }
 
 .account-types {

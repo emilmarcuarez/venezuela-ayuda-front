@@ -33,8 +33,10 @@
           <div class="nav-actions">
             <RouterLink to="/crear-publicacion" class="btn btn-primary">Donar Ahora</RouterLink>
             
-            <div class="profile-dropdown-wrapper">
-              <button class="icon-btn profile-btn" @click.stop="toggleDropdown">
+            <RouterLink v-if="!hasSession" to="/login" class="btn btn-secondary">Ingresar</RouterLink>
+
+            <div v-else class="profile-dropdown-wrapper">
+              <button class="icon-btn profile-btn" :aria-label="`Abrir perfil de ${currentUserName}`" @click.stop="toggleDropdown">
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
@@ -68,13 +70,16 @@
 </template>
 
 <script setup>
-import { ref, watch, onUnmounted, onMounted } from 'vue';
+import { computed, ref, watch, onUnmounted, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { authState, isAuthenticated, logout as clearAuthSession } from '../services/auth';
 
 const isMobileMenuOpen = ref(false);
 const isDropdownOpen = ref(false);
 const route = useRoute();
 const router = useRouter();
+const hasSession = computed(() => isAuthenticated());
+const currentUserName = computed(() => authState.user?.firstName || authState.user?.email || 'Perfil');
 
 const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value;
@@ -87,7 +92,7 @@ const goToProfile = () => {
 
 const logout = () => {
   isDropdownOpen.value = false;
-  // Handle logout logic here, for now go to login
+  clearAuthSession();
   router.push({ name: 'login' });
 };
 
@@ -110,7 +115,7 @@ watch(isMobileMenuOpen, (isOpen) => {
 });
 
 onUnmounted(() => {
-  document.addEventListener('click', closeDropdown);
+  document.removeEventListener('click', closeDropdown);
   document.body.style.overflow = '';
 });
 </script>
@@ -240,6 +245,17 @@ onUnmounted(() => {
   background-color: #0284c7;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: #e2e8f0;
+  border: 1px solid rgba(226, 232, 240, 0.35);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
 .profile-dropdown-wrapper {
