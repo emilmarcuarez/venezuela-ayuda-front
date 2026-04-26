@@ -9,15 +9,15 @@
           </div>
         </div>
         <div class="user-details">
-          <h1 class="user-name">Alejandro M.</h1>
+          <h1 class="user-name">{{ displayName }}</h1>
           <div class="verified-badge">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
               <path
                 d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
             </svg>
-            Donante Verificado
+            {{ accountLabel }}
           </div>
-          <p class="donations-count">12 donaciones realizadas</p>
+          <p class="donations-count">{{ userForm.email }}</p>
         </div>
       </div>
 
@@ -48,6 +48,8 @@
     <section class="info-section">
       <h2 class="section-title">Información Personal</h2>
       <div class="info-card">
+        <p v-if="isLoading" class="profile-status">Cargando datos de sesión...</p>
+        <p v-else-if="errorMessage" class="profile-status is-error">{{ errorMessage }}</p>
         <div class="info-grid">
           <div class="info-field">
             <label>NOMBRE COMPLETO</label>
@@ -81,18 +83,43 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { authState, loadCurrentUser } from '../services/auth';
 
 const isEditing = ref(false);
+const isLoading = ref(false);
+const errorMessage = ref('');
 
 const userForm = reactive({
-  name: 'Alejandro Mendoza',
-  email: 'alejandro.m@example.com',
-  phone: '+58 414 123 4567',
-  location: 'Caracas, Venezuela'
+  name: '',
+  email: '',
+  phone: 'No registrado',
+  location: 'No registrada'
 });
 
 const originalData = { ...userForm };
+const displayName = computed(() => userForm.name || 'Usuario');
+const accountLabel = computed(() => {
+  return authState.user?.accountType === 'ORGANIZATION'
+    ? 'Organización Verificada'
+    : 'Donante Verificado';
+});
+
+const syncUserForm = (user) => {
+  if (!user) {
+    return;
+  }
+
+  const nextData = {
+    name: user.fullName || user.organizationName || user.email,
+    email: user.email,
+    phone: 'No registrado',
+    location: user.location || 'No registrada'
+  };
+
+  Object.assign(userForm, nextData);
+  Object.assign(originalData, nextData);
+};
 
 const cancelEdit = () => {
   Object.assign(userForm, originalData);
@@ -103,6 +130,20 @@ const saveEdit = () => {
   Object.assign(originalData, userForm);
   isEditing.value = false;
 };
+
+onMounted(async () => {
+  isLoading.value = true;
+  errorMessage.value = '';
+
+  try {
+    const user = await loadCurrentUser();
+    syncUserForm(user || authState.user);
+  } catch (error) {
+    errorMessage.value = error.message || 'No se pudieron cargar los datos de sesión.';
+  } finally {
+    isLoading.value = false;
+  }
+});
 </script>
 
 <style scoped>
@@ -272,6 +313,16 @@ const saveEdit = () => {
   border-radius: 20px;
   padding: 2.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.profile-status {
+  color: #475569;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+
+.profile-status.is-error {
+  color: #b91c1c;
 }
 
 .info-grid {
