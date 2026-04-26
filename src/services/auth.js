@@ -15,6 +15,8 @@ const normalizeUser = (user) => ({
   ...user,
   fullName: [user?.firstName, user?.lastName].filter(Boolean).join(' '),
   location: [user?.city, user?.state, user?.country].filter(Boolean).join(', '),
+  phone: user?.phone || 'No registrado',
+  bio: user?.bio || '',
 });
 
 const persistSession = ({ accessToken, user, expiresIn }) => {
@@ -131,6 +133,27 @@ export const loadCurrentUser = async () => {
   }
 
   return user;
+};
+
+export const updateProfile = async (payload) => {
+  if (!isAuthenticated()) {
+    throw new Error('No autorizado');
+  }
+
+  const updatedUser = await request('/users/me', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+
+  const normalizedUser = normalizeUser(updatedUser);
+  authState.user = normalizedUser;
+
+  const storedSession = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+  if (storedSession?.token) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...storedSession, user: normalizedUser }));
+  }
+
+  return normalizedUser;
 };
 
 export const logout = () => {

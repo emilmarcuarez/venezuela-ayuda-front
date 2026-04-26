@@ -55,6 +55,8 @@ import { computed, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { login, register } from '../services/auth';
 
+const AUTH_LOADER_MIN_DURATION_MS = 2200;
+
 const props = defineProps({
   mode: {
     type: String,
@@ -65,6 +67,7 @@ const props = defineProps({
     default: 'persona'
   }
 });
+const emit = defineEmits(['loading-change']);
 
 const router = useRouter();
 const route = useRoute();
@@ -92,6 +95,11 @@ const submitLabel = computed(() => {
 const submitForm = async () => {
   errorMessage.value = '';
   isSubmitting.value = true;
+  const startedAt = Date.now();
+  emit('loading-change', {
+    active: true,
+    mode: isLoginMode.value ? 'login' : 'register'
+  });
 
   try {
     if (isLoginMode.value) {
@@ -117,12 +125,25 @@ const submitForm = async () => {
       });
     }
 
+    await waitForLoaderMinimum(startedAt);
     router.push(typeof route.query.redirect === 'string' ? route.query.redirect : '/');
   } catch (error) {
+    await waitForLoaderMinimum(startedAt);
     errorMessage.value = error.message || 'No se pudo iniciar sesión.';
   } finally {
     isSubmitting.value = false;
+    emit('loading-change', {
+      active: false,
+      mode: isLoginMode.value ? 'login' : 'register'
+    });
   }
+};
+
+const waitForLoaderMinimum = (startedAt) => {
+  const remaining = AUTH_LOADER_MIN_DURATION_MS - (Date.now() - startedAt);
+  return remaining > 0
+    ? new Promise((resolve) => window.setTimeout(resolve, remaining))
+    : Promise.resolve();
 };
 </script>
 

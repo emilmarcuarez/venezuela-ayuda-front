@@ -46,7 +46,11 @@
         </button>
       </div>
 
-      <SignUpForm :mode="mode" :account-type="accountType" />
+      <SignUpForm
+        :mode="mode"
+        :account-type="accountType"
+        @loading-change="emit('auth-loading-change', $event)"
+      />
 
       <div class="divider">
         <span>O CONTINÚA CON</span>
@@ -76,6 +80,7 @@ import { useRoute } from 'vue-router';
 import SignUpForm from './SignUpForm.vue';
 import SocialLogin from './SocialLogin.vue';
 
+const emit = defineEmits(['auth-loading-change']);
 const route = useRoute();
 const mode = ref(route.query.mode === 'register' ? 'register' : 'login');
 const accountType = ref('persona');
