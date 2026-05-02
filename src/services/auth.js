@@ -42,7 +42,7 @@ const clearSession = () => {
   authState.expiresAt = null;
 };
 
-const request = async (path, options = {}) => {
+export const request = async (path, options = {}) => {
   const headers = new Headers(options.headers || {});
   headers.set('Accept', 'application/json');
 
