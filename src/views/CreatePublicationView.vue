@@ -14,18 +14,12 @@
       <div class="publication-access-frame" :class="{ 'is-auth-locked': isAuthLocked }">
         <nav class="publication-stepper" aria-label="Progreso de creación">
           <template v-for="(item, index) in steps" :key="item.label">
-            <button
-              class="stepper-item"
-              :class="{
-                'is-active': currentStep === index + 1,
-                'is-complete': currentStep > index + 1,
-                'is-locked': isStepLocked(index + 1)
-              }"
-              type="button"
-              :aria-current="currentStep === index + 1 ? 'step' : undefined"
-              :aria-disabled="isStepLocked(index + 1) || isAuthLocked"
-              @click="requestStep(index + 1)"
-            >
+            <button class="stepper-item" :class="{
+              'is-active': currentStep === index + 1,
+              'is-complete': currentStep > index + 1,
+              'is-locked': isStepLocked(index + 1)
+            }" type="button" :aria-current="currentStep === index + 1 ? 'step' : undefined"
+              :aria-disabled="isStepLocked(index + 1) || isAuthLocked" @click="requestStep(index + 1)">
               <span class="stepper-dot">
                 <svg v-if="isStepLocked(index + 1)" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M7 10V8a5 5 0 0 1 10 0v2M6 10h12v10H6V10Z" />
@@ -37,66 +31,48 @@
               </span>
               <span>{{ item.label }}</span>
             </button>
-            <span
-              v-if="index < steps.length - 1"
-              class="stepper-line"
-              :class="{ 'is-filled': currentStep > index + 1 }"
-              aria-hidden="true"
-            ></span>
+            <span v-if="index < steps.length - 1" class="stepper-line" :class="{ 'is-filled': currentStep > index + 1 }"
+              aria-hidden="true"></span>
           </template>
         </nav>
 
-        <form
-          class="publication-grid"
+        <form class="publication-grid"
           :class="{ 'is-step-one': currentStep === 1, 'is-review-layout': currentStep === 3 }"
-          :aria-hidden="isAuthLocked"
-          @submit.prevent="publishPost"
-        >
-        <section class="publication-card" aria-live="polite">
-          <div v-if="currentStep === 1" class="step-panel">
-            <SectionTitle tone="yellow" title="Elige una Categoría" />
+          :aria-hidden="isAuthLocked" @submit.prevent="publishPost">
+          <section class="publication-card" aria-live="polite">
+            <div v-if="currentStep === 1" class="step-panel">
+              <SectionTitle tone="yellow" title="Elige una Categoría" />
 
-            <div
-              class="category-grid"
-              :class="{ 'has-error': errors.category, 'is-shaking': errorFocusField === 'category' }"
-              data-field="category"
-              role="radiogroup"
-              aria-label="Categoría"
-            >
-              <label
-                v-for="category in categories"
-                :key="category.name"
-                class="category-option"
-                :class="{ 'is-selected': form.category === category.name }"
-                :style="{ '--category-active': category.color }"
-              >
-                <input v-model="form.category" type="radio" name="category" :value="category.name" @change="clearError('category')" />
-                <span class="category-icon" v-html="category.icon"></span>
-                <span>{{ category.name }}</span>
-                <svg class="category-check" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M20 6 9 17l-5-5" />
-                </svg>
-              </label>
-              <ValidationMessage :message="errors.category" />
-            </div>
+              <div class="category-grid"
+                :class="{ 'has-error': errors.category, 'is-shaking': errorFocusField === 'category' }"
+                data-field="category" role="radiogroup" aria-label="Categoría">
+                <label v-for="category in categories" :key="category.name" class="category-option"
+                  :class="{ 'is-selected': form.category === category.name }"
+                  :style="{ '--category-active': category.color }">
+                  <input v-model="form.category" type="radio" name="category" :value="category.name"
+                    @change="clearError('category')" />
+                  <span class="category-icon" v-html="category.icon"></span>
+                  <span>{{ category.name }}</span>
+                  <svg class="category-check" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                </label>
+                <ValidationMessage :message="errors.category" />
+              </div>
 
-            <SectionTitle tone="blue" title="Detalles de la Publicación" />
+              <SectionTitle tone="blue" title="Detalles de la Publicación" />
 
-            <div class="form-stack">
-              <label class="field-group" :class="{ 'has-error': errors.title, 'is-shaking': errorFocusField === 'title' }" data-field="title">
-                <span>TÍTULO DE TU PUBLICACIÓN</span>
-                <input
-                  v-model="form.title"
-                  type="text"
-                  placeholder="Ej. Donación de antibióticos para niños"
-                  :aria-invalid="Boolean(errors.title)"
-                  @input="clearError('title')"
-                />
-                <ValidationMessage :message="errors.title" />
-              </label>
+              <div class="form-stack">
+                <label class="field-group"
+                  :class="{ 'has-error': errors.title, 'is-shaking': errorFocusField === 'title' }" data-field="title">
+                  <span>TÍTULO DE TU PUBLICACIÓN</span>
+                  <input v-model="form.title" type="text" placeholder="Ej. Donación de antibióticos para niños"
+                    :aria-invalid="Boolean(errors.title)" @input="clearError('title')" />
+                  <ValidationMessage :message="errors.title" />
+                </label>
 
-              <div class="two-column">
-                <label class="field-group" :class="{ 'has-error': errors.value, 'is-shaking': errorFocusField === 'value' }" data-field="value">
+                <div class="two-column">
+                  <!-- <label class="field-group" :class="{ 'has-error': errors.value, 'is-shaking': errorFocusField === 'value' }" data-field="value">
                   <span>VALOR ESTIMADO ($)</span>
                   <input
                     v-model="form.value"
@@ -108,289 +84,278 @@
                     @input="clearError('value')"
                   />
                   <ValidationMessage :message="errors.value" />
-                </label>
+                </label> -->
 
-                <label
-                  class="field-group date-field"
-                  :class="{ 'has-error': errors.deadline, 'is-shaking': errorFocusField === 'deadline' }"
-                  data-field="deadline"
-                >
-                  <span>FECHA LÍMITE / VENCIMIENTO</span>
-                  <button class="date-trigger" type="button" :aria-invalid="Boolean(errors.deadline)" @click="toggleCalendar">
-                    <span>{{ formattedDeadline || 'Selecciona una fecha' }}</span>
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
-                    </svg>
-                  </button>
-                  <ValidationMessage :message="errors.deadline" />
+                  <label class="field-group date-field"
+                    :class="{ 'has-error': errors.deadline, 'is-shaking': errorFocusField === 'deadline' }"
+                    data-field="deadline">
+                    <span>FECHA LÍMITE / VENCIMIENTO</span>
+                    <button class="date-trigger" type="button" :aria-invalid="Boolean(errors.deadline)"
+                      @click="toggleCalendar">
+                      <span>{{ formattedDeadline || 'Selecciona una fecha' }}</span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+                      </svg>
+                    </button>
+                    <ValidationMessage :message="errors.deadline" />
 
-                  <div v-if="isCalendarOpen" class="calendar-panel" aria-label="Calendario de fecha límite">
-                    <div class="calendar-header">
-                      <button
-                        type="button"
-                        class="calendar-nav"
-                        aria-label="Mes anterior"
-                        :disabled="isAtCurrentMonth"
-                        @click="previousMonth"
-                      >
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="m15 18-6-6 6-6" />
-                        </svg>
-                      </button>
-
-                      <div class="calendar-title">
-                        <button type="button" @click="toggleMonthList">
-                          {{ monthNames[calendarMonth] }}
+                    <div v-if="isCalendarOpen" class="calendar-panel" aria-label="Calendario de fecha límite">
+                      <div class="calendar-header">
+                        <button type="button" class="calendar-nav" aria-label="Mes anterior"
+                          :disabled="isAtCurrentMonth" @click="previousMonth">
                           <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="m6 9 6 6 6-6" />
+                            <path d="m15 18-6-6 6-6" />
                           </svg>
                         </button>
-                        <span>{{ calendarYear }}</span>
+
+                        <div class="calendar-title">
+                          <button type="button" @click="toggleMonthList">
+                            {{ monthNames[calendarMonth] }}
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                              <path d="m6 9 6 6 6-6" />
+                            </svg>
+                          </button>
+                          <span>{{ calendarYear }}</span>
+                        </div>
+
+                        <button type="button" class="calendar-nav" aria-label="Mes siguiente" @click="nextMonth">
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m9 18 6-6-6-6" />
+                          </svg>
+                        </button>
                       </div>
 
-                      <button type="button" class="calendar-nav" aria-label="Mes siguiente" @click="nextMonth">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="m9 18 6-6-6-6" />
-                        </svg>
-                      </button>
-                    </div>
+                      <div v-if="showMonthList" class="month-grid" aria-label="Seleccionar mes">
+                        <button v-for="month in availableMonths" :key="month.index" type="button"
+                          :class="{ 'is-active': calendarMonth === month.index }" @click="selectMonth(month.index)">
+                          {{ month.name.slice(0, 3) }}
+                        </button>
+                      </div>
 
-                    <div v-if="showMonthList" class="month-grid" aria-label="Seleccionar mes">
-                      <button
-                        v-for="month in availableMonths"
-                        :key="month.index"
-                        type="button"
-                        :class="{ 'is-active': calendarMonth === month.index }"
-                        @click="selectMonth(month.index)"
-                      >
-                        {{ month.name.slice(0, 3) }}
-                      </button>
-                    </div>
+                      <div class="calendar-weekdays" aria-hidden="true">
+                        <span v-for="day in weekDays" :key="day">{{ day }}</span>
+                      </div>
 
-                    <div class="calendar-weekdays" aria-hidden="true">
-                      <span v-for="day in weekDays" :key="day">{{ day }}</span>
-                    </div>
-
-                    <div class="calendar-days">
-                      <button
-                        v-for="day in calendarDays"
-                        :key="day.key"
-                        type="button"
-                        class="calendar-day"
-                        :class="{
+                      <div class="calendar-days">
+                        <button v-for="day in calendarDays" :key="day.key" type="button" class="calendar-day" :class="{
                           'is-placeholder': day.isPlaceholder,
                           'is-selected': day.iso === form.deadline,
                           'is-today': day.iso === todayIso
-                        }"
-                        :disabled="day.isPlaceholder"
-                        @click="selectDate(day)"
-                      >
-                        {{ day.label }}
-                      </button>
+                        }" :disabled="day.isPlaceholder" @click="selectDate(day)">
+                          {{ day.label }}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </label>
-              </div>
-
-              <label
-                class="field-group"
-                :class="{ 'has-error': errors.description, 'is-shaking': errorFocusField === 'description' }"
-                data-field="description"
-              >
-                <span>DESCRIPCIÓN</span>
-                <textarea
-                  v-model="form.description"
-                  rows="5"
-                  placeholder="Describe los artículos o la necesidad en detalle..."
-                  :aria-invalid="Boolean(errors.description)"
-                  @input="clearError('description')"
-                ></textarea>
-                <ValidationMessage :message="errors.description" />
-              </label>
-            </div>
-          </div>
-
-          <div v-else-if="currentStep === 2" class="step-panel">
-            <SectionTitle tone="blue" title="Información de contacto" />
-
-            <div class="form-stack">
-              <label
-                class="field-group"
-                :class="{ 'has-error': errors.contactName, 'is-shaking': errorFocusField === 'contactName' }"
-                data-field="contactName"
-              >
-                <span>NOMBRE DE CONTACTO</span>
-                <input
-                  v-model="form.contactName"
-                  type="text"
-                  placeholder="Ej. Fundación Manos Solidarias"
-                  :aria-invalid="Boolean(errors.contactName)"
-                  @input="clearError('contactName')"
-                />
-                <ValidationMessage :message="errors.contactName" />
-              </label>
-
-              <div class="two-column">
-                <label class="field-group" :class="{ 'has-error': errors.phone, 'is-shaking': errorFocusField === 'phone' }" data-field="phone">
-                  <span>NÚMERO DE TELÉFONO</span>
-                  <div class="phone-input-row">
-                    <CustomSelect
-                      v-model="form.countryCode"
-                      :options="countryCodeOptions"
-                      placeholder="+58"
-                      :invalid="Boolean(errors.phone)"
-                      @update:model-value="clearError('phone')"
-                    />
-                    <input
-                      v-model="form.phone"
-                      type="tel"
-                      inputmode="numeric"
-                      placeholder="000 000 0000"
-                      :aria-invalid="Boolean(errors.phone)"
-                      @input="handlePhoneInput"
-                    />
-                  </div>
-                  <ValidationMessage :message="errors.phone" />
-                </label>
-
-                <div
-                  class="field-group"
-                  :class="{ 'has-error': errors.location, 'is-shaking': errorFocusField === 'location' }"
-                  data-field="location"
-                >
-                  <span id="location-label">UBICACIÓN PRINCIPAL</span>
-                  <CustomSelect
-                    v-model="form.location"
-                    :options="locationOptions"
-                    placeholder="Ciudad, Estado"
-                    :invalid="Boolean(errors.location)"
-                    label-id="location-label"
-                    @update:model-value="clearError('location')"
-                  />
-                  <ValidationMessage :message="errors.location" />
-                </div>
-              </div>
-
-              <div
-                class="preference-group"
-                :class="{ 'has-error': errors.preference, 'is-shaking': errorFocusField === 'preference' }"
-                data-field="preference"
-              >
-                <span>PREFERENCIA DE COMUNICACIÓN</span>
-                <div class="preference-grid" role="radiogroup" aria-label="Preferencia de comunicación">
-                  <label
-                    v-for="preference in preferences"
-                    :key="preference.name"
-                    class="preference-option"
-                    :class="{ 'is-selected': form.preference === preference.name }"
-                  >
-                    <input v-model="form.preference" type="radio" name="preference" :value="preference.name" @change="clearError('preference')" />
-                    <span class="preference-icon" v-html="preference.icon"></span>
-                    <strong>{{ preference.name }}</strong>
-                    <small>{{ preference.caption }}</small>
                   </label>
                 </div>
-                <ValidationMessage :message="errors.preference" />
+
+                <label class="field-group"
+                  :class="{ 'has-error': errors.description, 'is-shaking': errorFocusField === 'description' }"
+                  data-field="description">
+                  <span>DESCRIPCIÓN</span>
+                  <textarea v-model="form.description" rows="5"
+                    placeholder="Describe los artículos o la necesidad en detalle..."
+                    :aria-invalid="Boolean(errors.description)" @input="clearError('description')"></textarea>
+                  <ValidationMessage :message="errors.description" />
+                </label>
+
+                <div class="field-group">
+                  <span>Fotos de referencia(MÁX 5)</span>
+                  <input type="file" accept="image/png, image/jpeg, image/webp" multiple
+                    :disabled="form.images.length >= 5" @change="handleImageUpload"
+                    style="margin-top: 0.5rem; padding: 0.5rem; background: white; border-radius: 12px; border: 1px solid #dbe1ff; width: 100%;" />
+
+                  <div v-if="form.images.length > 0"
+                    style="display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap;">
+                    <div v-for="(img, index) in form.images" :key="index"
+                      style="position: relative; width: 5rem; height: 5rem;">
+                      <img :src="img"
+                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 1px solid #dbe1ff;" />
+                      <button type="button" @click="removeImage(index)"
+                        style="position: absolute; top: -6px; right: -6px; background: #b91c1c; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: grid; place-items: center; font-weight: bold; font-size: 12px;">✕</button>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
-          </div>
 
-          <div v-else class="step-panel review-panel">
-            <SectionTitle tone="red" title="Revisa antes de publicar" />
+            <div v-else-if="currentStep === 2" class="step-panel">
+              <SectionTitle tone="blue" title="Información de contacto" />
 
-            <div class="publication-preview">
-              <div class="preview-header">
-                <span class="preview-badge">
-                  <span class="review-icon" v-html="currentCategory.icon"></span>
-                  {{ form.category }}
-                </span>
-                <strong>
-                  <span class="review-icon" v-html="reviewIcons.calendar"></span>
-                  {{ formattedDeadline || 'Fecha pendiente' }}
-                </strong>
-              </div>
-              <h3>{{ form.title || 'Título de tu publicación' }}</h3>
-              <p>{{ form.description || 'Describe los artículos, cantidades, condiciones y urgencia de la necesidad.' }}</p>
-              <div class="preview-meta">
-                <span v-for="item in previewMetaItems" :key="item.label">
-                  <span class="review-icon" v-html="item.icon"></span>
-                  {{ item.value }}
-                </span>
+              <div class="form-stack">
+                <label class="field-group"
+                  :class="{ 'has-error': errors.contactName, 'is-shaking': errorFocusField === 'contactName' }"
+                  data-field="contactName">
+                  <span>NOMBRE DE CONTACTO</span>
+                  <input v-model="form.contactName" type="text" placeholder="Ej. Fundación Manos Solidarias"
+                    :aria-invalid="Boolean(errors.contactName)" @input="clearError('contactName')" />
+                  <ValidationMessage :message="errors.contactName" />
+                </label>
+
+                <div class="two-column">
+                  <label class="field-group"
+                    :class="{ 'has-error': errors.phone, 'is-shaking': errorFocusField === 'phone' }"
+                    data-field="phone">
+                    <span>NÚMERO DE TELÉFONO</span>
+                    <div class="phone-input-row">
+                      <CustomSelect v-model="form.countryCode" :options="countryCodeOptions" placeholder="+58"
+                        :invalid="Boolean(errors.phone)" @update:model-value="clearError('phone')" />
+                      <input v-model="form.phone" type="tel" inputmode="numeric" placeholder="000 000 0000"
+                        :aria-invalid="Boolean(errors.phone)" @input="handlePhoneInput" />
+                    </div>
+                    <ValidationMessage :message="errors.phone" />
+                  </label>
+
+                  <div class="field-group"
+                    :class="{ 'has-error': errors.location, 'is-shaking': errorFocusField === 'location' }"
+                    data-field="location">
+                    <span id="location-label">UBICACIÓN PRINCIPAL</span>
+                    <CustomSelect v-model="form.location" :options="locationOptions" placeholder="Ciudad, Estado"
+                      :invalid="Boolean(errors.location)" label-id="location-label"
+                      @update:model-value="clearError('location')" />
+                    <ValidationMessage :message="errors.location" />
+                  </div>
+                </div>
+
+                <div class="preference-group"
+                  :class="{ 'has-error': errors.preference, 'is-shaking': errorFocusField === 'preference' }"
+                  data-field="preference">
+                  <span>PREFERENCIA DE COMUNICACIÓN</span>
+                  <div class="preference-grid" role="radiogroup" aria-label="Preferencia de comunicación">
+                    <label v-for="preference in preferences" :key="preference.name" class="preference-option"
+                      :class="{ 'is-selected': form.preference === preference.name }">
+                      <input v-model="form.preference" type="radio" name="preference" :value="preference.name"
+                        @change="clearError('preference')" />
+                      <span class="preference-icon" v-html="preference.icon"></span>
+                      <strong>{{ preference.name }}</strong>
+                      <small>{{ preference.caption }}</small>
+                    </label>
+                  </div>
+                  <ValidationMessage :message="errors.preference" />
+                </div>
               </div>
             </div>
 
-            <div class="review-grid">
-              <div class="review-summary">
-                <h3>Resumen de contacto</h3>
-                <div v-for="item in reviewItems" :key="item.label" class="review-row">
-                  <span>
-                    <span class="review-icon" v-html="item.icon"></span>
-                    {{ item.label }}
+            <div v-else class="step-panel review-panel">
+              <SectionTitle tone="red" title="Revisa antes de publicar" />
+
+              <div class="publication-preview">
+                <div class="preview-header">
+                  <span class="preview-badge">
+                    <span class="review-icon" v-html="currentCategory.icon"></span>
+                    {{ form.category }}
                   </span>
-                  <strong>{{ item.value || 'Pendiente' }}</strong>
+                  <strong>
+                    <span class="review-icon" v-html="reviewIcons.calendar"></span>
+                    {{ formattedDeadline || 'Fecha pendiente' }}
+                  </strong>
+                </div>
+                <h3>{{ form.title || 'Título de tu publicación' }}</h3>
+                <p>{{ form.description || 'Describe los artículos, cantidades, condiciones y urgencia de la necesidad.'
+                }}</p>
+                <div class="preview-meta">
+                  <span v-for="item in previewMetaItems" :key="item.label">
+                    <span class="review-icon" v-html="item.icon"></span>
+                    {{ item.value }}
+                  </span>
                 </div>
               </div>
 
-              <div class="verification-card">
-                <h3>Checklist de transparencia</h3>
-                <label v-for="item in verificationItems" :key="item" class="verification-row">
-                  <input type="checkbox" checked />
-                  <span>{{ item }}</span>
-                </label>
+              <div class="review-grid">
+                <div class="review-summary">
+                  <h3>Resumen de contacto</h3>
+                  <div v-for="item in reviewItems" :key="item.label" class="review-row">
+                    <span>
+                      <span class="review-icon" v-html="item.icon"></span>
+                      {{ item.label }}
+                    </span>
+                    <strong>{{ item.value || 'Pendiente' }}</strong>
+                  </div>
+                </div>
+
+                <div class="verification-card">
+                  <h3>Checklist de transparencia</h3>
+                  <label v-for="item in verificationItems" :key="item" class="verification-row">
+                    <input type="checkbox" checked />
+                    <span>{{ item }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="impact-strip">
+                <div>
+                  <strong>24 h</strong>
+                  <span>Revisión estimada</span>
+                </div>
+                <div>
+                  <strong>3</strong>
+                  <span>Datos clave validados</span>
+                </div>
+                <div>
+                  <strong>100%</strong>
+                  <span>Enfoque comunitario</span>
+                </div>
+              </div>
+
+              <div v-if="submitted" class="success-panel" role="status">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                <div>
+                  <strong>Publicación enviada</strong>
+                  <p>Quedó lista para revisión humanitaria.</p>
+                </div>
               </div>
             </div>
 
-            <div class="impact-strip">
-              <div>
-                <strong>24 h</strong>
-                <span>Revisión estimada</span>
-              </div>
-              <div>
-                <strong>3</strong>
-                <span>Datos clave validados</span>
-              </div>
-              <div>
-                <strong>100%</strong>
-                <span>Enfoque comunitario</span>
-              </div>
+            <div class="form-actions">
+              <button class="ghost-action" type="button" :disabled="currentStep === 1 || isPublishing"
+                @click="previousStep">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M19 12H5m7 7-7-7 7-7" />
+                </svg>
+                Atrás
+              </button>
+
+              <button v-if="currentStep < 3" class="primary-action" type="button" :disabled="isPublishing"
+                @click="nextStep">
+                {{ currentStep === 1 ? 'Continuar al Contacto' : 'Continuar a Revisión' }}
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14m-7-7 7 7-7 7" />
+                </svg>
+              </button>
+
+              <button v-else class="primary-action" type="submit" :disabled="isPublishing">
+                {{ isPublishing ? 'Publicando...' : 'Publicar solicitud' }}
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </button>
             </div>
 
-            <div v-if="submitted" class="success-panel" role="status">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-              <div>
-                <strong>Publicación enviada</strong>
-                <p>Quedó lista para revisión humanitaria.</p>
+            <div v-if="currentStep === 1" class="step-one-support">
+              <div class="trust-panel compact">
+                <div class="trust-heading">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                  <h2>Transparencia Garantizada</h2>
+                </div>
+                <p>Cada publicación es revisada para proteger a la comunidad y validar la necesidad.</p>
+              </div>
+
+              <div class="image-panel compact">
+                <img :src="communityHandsImage" alt="Manos unidas en señal de apoyo comunitario" />
+                <blockquote>"Juntos, construimos un legado de esperanza."</blockquote>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div class="form-actions">
-            <button class="ghost-action" type="button" :disabled="currentStep === 1 || isPublishing" @click="previousStep">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M19 12H5m7 7-7-7 7-7" />
-              </svg>
-              Atrás
-            </button>
-
-            <button v-if="currentStep < 3" class="primary-action" type="button" :disabled="isPublishing" @click="nextStep">
-              {{ currentStep === 1 ? 'Continuar al Contacto' : 'Continuar a Revisión' }}
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 12h14m-7-7 7 7-7 7" />
-              </svg>
-            </button>
-
-            <button v-else class="primary-action" type="submit" :disabled="isPublishing">
-              {{ isPublishing ? 'Publicando...' : 'Publicar solicitud' }}
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-            </button>
-          </div>
-
-          <div v-if="currentStep === 1" class="step-one-support">
-            <div class="trust-panel compact">
+          <aside v-if="currentStep !== 1" class="publication-aside" aria-label="Contexto de publicación">
+            <div class="trust-panel" :class="{ 'review-trust': currentStep === 3 }">
               <div class="trust-heading">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
@@ -398,42 +363,24 @@
                 </svg>
                 <h2>Transparencia Garantizada</h2>
               </div>
-              <p>Cada publicación es revisada para proteger a la comunidad y validar la necesidad.</p>
+              <p v-if="currentStep === 3" class="trust-copy">
+                Todas las solicitudes pasan por un riguroso proceso de verificación antes de ser
+                publicadas en nuestra plataforma.
+              </p>
+              <ul>
+                <li v-for="item in sidebarTrustItems" :key="item">{{ item }}</li>
+              </ul>
             </div>
 
-            <div class="image-panel compact">
-              <img :src="communityHandsImage" alt="Manos unidas en señal de apoyo comunitario" />
-              <blockquote>"Juntos, construimos un legado de esperanza."</blockquote>
+            <div class="image-panel">
+              <img :src="asideImage.src" :alt="asideImage.alt" />
+              <blockquote>{{ asideImage.quote }}</blockquote>
             </div>
-          </div>
-        </section>
-
-        <aside v-if="currentStep !== 1" class="publication-aside" aria-label="Contexto de publicación">
-          <div class="trust-panel" :class="{ 'review-trust': currentStep === 3 }">
-            <div class="trust-heading">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
-                <path d="m9 12 2 2 4-4" />
-              </svg>
-              <h2>Transparencia Garantizada</h2>
-            </div>
-            <p v-if="currentStep === 3" class="trust-copy">
-              Todas las solicitudes pasan por un riguroso proceso de verificación antes de ser
-              publicadas en nuestra plataforma.
-            </p>
-            <ul>
-              <li v-for="item in sidebarTrustItems" :key="item">{{ item }}</li>
-            </ul>
-          </div>
-
-          <div class="image-panel">
-            <img :src="asideImage.src" :alt="asideImage.alt" />
-            <blockquote>{{ asideImage.quote }}</blockquote>
-          </div>
-        </aside>
+          </aside>
         </form>
 
-        <section v-if="isAuthLocked" class="auth-lock-modal" role="dialog" aria-modal="true" aria-labelledby="auth-lock-title">
+        <section v-if="isAuthLocked" class="auth-lock-modal" role="dialog" aria-modal="true"
+          aria-labelledby="auth-lock-title">
           <div class="auth-lock-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24">
               <path d="M12 3 4 7v5c0 5 3.4 8.2 8 9 4.6-.8 8-4 8-9V7l-8-4Z" />
@@ -443,7 +390,9 @@
           <p class="auth-lock-kicker">Cuenta requerida</p>
           <h2 id="auth-lock-title">Inicia sesión para publicar con confianza</h2>
           <p>
-            Protegemos cada solicitud para que la ayuda llegue mejor. Entra o crea tu cuenta y esta vista se desbloquea al instante.
+            Protegemos cada solicitud para que la ayuda llegue mejor. Entra o crea tu cuenta y esta vista se desbloquea
+            al
+            instante.
           </p>
           <div class="auth-lock-actions">
             <button type="button" class="auth-lock-primary" @click="goToLogin">
@@ -460,17 +409,15 @@
       </div>
     </main>
 
-    <PublishingLoader
-      :active="isPublishing"
-      title="Publicando solicitud"
-      copy="Estamos resguardando la información y preparando tu solicitud para revisión comunitaria."
-    />
+    <PublishingLoader :active="isPublishing" title="Publicando solicitud"
+      copy="Estamos resguardando la información y preparando tu solicitud para revisión comunitaria." />
 
     <MainFooter />
   </div>
 </template>
 
 <script setup>
+import { createPost } from '../services/posts';
 import { computed, defineComponent, h, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import communityHandsImage from '../assets/community-hands.png';
@@ -615,7 +562,8 @@ const form = reactive({
   countryCode: '+58',
   phone: '',
   location: '',
-  preference: 'Chat Interno'
+  preference: 'Chat Interno',
+  images: [],
 });
 
 const monthNames = [
@@ -708,11 +656,6 @@ const previewMetaItems = computed(() => [
     icon: reviewIcons.location
   },
   {
-    label: 'Valor',
-    value: form.value ? `$${form.value}` : 'Valor por definir',
-    icon: reviewIcons.value
-  },
-  {
     label: 'Comunicación',
     value: form.preference,
     icon: currentPreference.value.icon
@@ -767,7 +710,6 @@ const asideImage = computed(() => {
 const reviewItems = computed(() => [
   { label: 'Categoría', value: form.category, icon: currentCategory.value.icon },
   { label: 'Título', value: form.title, icon: reviewIcons.title },
-  { label: 'Valor estimado', value: form.value ? `$${form.value}` : '', icon: reviewIcons.value },
   { label: 'Fecha límite', value: formattedDeadline.value, icon: reviewIcons.calendar },
   { label: 'Contacto', value: form.contactName, icon: reviewIcons.contact },
   { label: 'Teléfono', value: fullPhone.value, icon: reviewIcons.phone },
@@ -840,6 +782,26 @@ async function previousStep() {
   await goToStep(Math.max(currentStep.value - 1, 1));
 }
 
+function handleImageUpload(event) {
+  const files = Array.from(event.target.files);
+
+  if (form.images.length + files.length > 5) {
+    alert('Solo puedes subir un máximo de 5 fotos de referencia.');
+    return;
+  }
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      form.images.push(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  event.target.value = '';
+}
+function removeImage(index) {
+  form.images.splice(index, 1);
+}
 function buildPublicationSummary() {
   return {
     category: form.category,
@@ -850,31 +812,42 @@ function buildPublicationSummary() {
     contactName: form.contactName,
     phone: fullPhone.value,
     location: form.location,
-    preference: form.preference
+    preference: form.preference,
+    images: form.images,
   };
 }
 
 async function publishPost() {
   if (isAuthLocked.value) return;
   if (isPublishing.value) return;
-
   const valid = validateThroughStep(2);
   if (!valid) {
     focusFirstError();
     return;
   }
-
   isPublishing.value = true;
   submitted.value = false;
-  sessionStorage.setItem('publicationSummary', JSON.stringify(buildPublicationSummary()));
 
-  window.setTimeout(() => {
-    if (form.preference === 'Chat Interno') {
-      router.push({ name: 'chat' });
-    } else {
-      router.push({ name: 'thank-you' });
-    }
-  }, 1800);
+  try {
+    const postData = buildPublicationSummary();
+
+    await createPost(postData);
+    sessionStorage.setItem('publicationSummary', JSON.stringify(postData));
+    submitted.value = true;
+
+    window.setTimeout(() => {
+      if (form.preference === 'Chat Interno') {
+        router.push({ name: 'chat' });
+      } else {
+        router.push({ name: 'thank-you' });
+      }
+    }, 1800);
+  } catch (error) {
+    console.error(error);
+    alert('No se pudo publicar. Revisa la consola para más detalles.');
+  } finally {
+    isPublishing.value = false;
+  }
 }
 
 function isStepLocked(step) {
@@ -896,23 +869,23 @@ function isStepDataValid(step) {
     const numericValue = Number(form.value);
     return Boolean(
       form.category &&
-        form.title.trim().length >= 6 &&
-        form.value &&
-        !Number.isNaN(numericValue) &&
-        numericValue > 0 &&
-        form.deadline &&
-        new Date(`${form.deadline}T00:00:00`) >= today &&
-        form.description.trim().length >= 20
+      form.title.trim().length >= 6 &&
+      form.value &&
+      !Number.isNaN(numericValue) &&
+      numericValue > 0 &&
+      form.deadline &&
+      new Date(`${form.deadline}T00:00:00`) >= today &&
+      form.description.trim().length >= 20
     );
   }
 
   if (step === 2) {
     return Boolean(
       form.contactName.trim().length >= 2 &&
-        form.countryCode &&
-        form.phone.replace(/\D/g, '').length >= 7 &&
-        form.location &&
-        form.preference
+      form.countryCode &&
+      form.phone.replace(/\D/g, '').length >= 7 &&
+      form.location &&
+      form.preference
     );
   }
 
@@ -955,10 +928,6 @@ function setStepErrors(step) {
     if (!form.category) nextErrors.category = 'Selecciona una categoría antes de continuar.';
     if (!form.title.trim()) nextErrors.title = 'Completa el título antes de continuar.';
     else if (form.title.trim().length < 6) nextErrors.title = 'Usa un título más claro, mínimo 6 caracteres.';
-
-    const numericValue = Number(form.value);
-    if (!form.value) nextErrors.value = 'Indica el valor estimado antes de continuar.';
-    else if (Number.isNaN(numericValue) || numericValue <= 0) nextErrors.value = 'El valor estimado debe ser mayor a 0.';
 
     if (!form.deadline) nextErrors.deadline = 'Selecciona una fecha límite válida.';
     else if (new Date(`${form.deadline}T00:00:00`) < today) nextErrors.deadline = 'La fecha límite no puede ser anterior a hoy.';
@@ -1305,7 +1274,7 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
-.stepper-item > span:last-child {
+.stepper-item>span:last-child {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.72rem;
   letter-spacing: 0.1em;
@@ -1570,7 +1539,7 @@ onBeforeUnmount(() => {
 }
 
 .category-option.is-selected .category-icon,
-.category-option.is-selected > span:not(.category-icon) {
+.category-option.is-selected>span:not(.category-icon) {
   color: var(--category-active, var(--color-va-blue));
 }
 
@@ -1618,7 +1587,7 @@ onBeforeUnmount(() => {
 }
 
 .field-group span,
-.preference-group > span {
+.preference-group>span {
   color: var(--color-text-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.72rem;
@@ -1969,7 +1938,7 @@ onBeforeUnmount(() => {
 }
 
 .preview-badge,
-.preview-meta > span {
+.preview-meta>span {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
   color: var(--color-va-blue);
@@ -2040,7 +2009,7 @@ onBeforeUnmount(() => {
   border-bottom: 0;
 }
 
-.review-row > span {
+.review-row>span {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
@@ -2373,6 +2342,7 @@ onBeforeUnmount(() => {
 }
 
 @keyframes validationShake {
+
   0%,
   100% {
     transform: translateX(0);
@@ -2440,7 +2410,7 @@ onBeforeUnmount(() => {
     min-width: 4.2rem;
   }
 
-  .stepper-item > span:last-child {
+  .stepper-item>span:last-child {
     font-size: 0.64rem;
   }
 
