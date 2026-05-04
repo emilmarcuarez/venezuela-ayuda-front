@@ -72,19 +72,18 @@
                 </label>
 
                 <div class="two-column">
-                  <!-- <label class="field-group" :class="{ 'has-error': errors.value, 'is-shaking': errorFocusField === 'value' }" data-field="value">
-                  <span>VALOR ESTIMADO ($)</span>
-                  <input
-                    v-model="form.value"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="0.00"
-                    :aria-invalid="Boolean(errors.value)"
-                    @input="clearError('value')"
-                  />
-                  <ValidationMessage :message="errors.value" />
-                </label> -->
+                  <label class="field-group" :class="{ 'has-error': errors.quantityNeeded, 'is-shaking': errorFocusField === 'quantityNeeded' }" data-field="quantityNeeded">
+                    <span>CANTIDAD REQUERIDA (META)</span>
+                    <input
+                      v-model="form.quantityNeeded"
+                      type="number"
+                      min="1"
+                      placeholder="Ej. 50"
+                      :aria-invalid="Boolean(errors.quantityNeeded)"
+                      @input="clearError('quantityNeeded')"
+                    />
+                    <ValidationMessage :message="errors.quantityNeeded" />
+                  </label>
 
                   <label class="field-group date-field"
                     :class="{ 'has-error': errors.deadline, 'is-shaking': errorFocusField === 'deadline' }"
@@ -555,7 +554,7 @@ const showMonthList = ref(false);
 const form = reactive({
   category: 'Médico',
   title: '',
-  value: '',
+  quantityNeeded: 1,
   deadline: '',
   description: '',
   contactName: '',
@@ -710,6 +709,7 @@ const asideImage = computed(() => {
 const reviewItems = computed(() => [
   { label: 'Categoría', value: form.category, icon: currentCategory.value.icon },
   { label: 'Título', value: form.title, icon: reviewIcons.title },
+  { label: 'Meta', value: form.quantityNeeded, icon: reviewIcons.value },
   { label: 'Fecha límite', value: formattedDeadline.value, icon: reviewIcons.calendar },
   { label: 'Contacto', value: form.contactName, icon: reviewIcons.contact },
   { label: 'Teléfono', value: fullPhone.value, icon: reviewIcons.phone },
@@ -806,7 +806,7 @@ function buildPublicationSummary() {
   return {
     category: form.category,
     title: form.title,
-    value: form.value ? `$${form.value}` : 'Valor por definir',
+    quantityNeeded: Number(form.quantityNeeded),
     deadline: formattedDeadline.value,
     description: form.description,
     contactName: form.contactName,
@@ -866,11 +866,10 @@ function arePreviousStepsValid(step) {
 
 function isStepDataValid(step) {
   if (step === 1) {
-    const numericValue = Number(form.value);
+    const numericValue = Number(form.quantityNeeded);
     return Boolean(
       form.category &&
       form.title.trim().length >= 6 &&
-      form.value &&
       !Number.isNaN(numericValue) &&
       numericValue > 0 &&
       form.deadline &&
@@ -928,6 +927,11 @@ function setStepErrors(step) {
     if (!form.category) nextErrors.category = 'Selecciona una categoría antes de continuar.';
     if (!form.title.trim()) nextErrors.title = 'Completa el título antes de continuar.';
     else if (form.title.trim().length < 6) nextErrors.title = 'Usa un título más claro, mínimo 6 caracteres.';
+
+    const qNum = Number(form.quantityNeeded);
+    if (!form.quantityNeeded || Number.isNaN(qNum) || qNum <= 0) {
+      nextErrors.quantityNeeded = 'Ingresa una cantidad requerida válida (mínimo 1).';
+    }
 
     if (!form.deadline) nextErrors.deadline = 'Selecciona una fecha límite válida.';
     else if (new Date(`${form.deadline}T00:00:00`) < today) nextErrors.deadline = 'La fecha límite no puede ser anterior a hoy.';
