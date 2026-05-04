@@ -24,9 +24,8 @@
         <div class="menu-content">
           <div class="nav-links">
             <RouterLink to="/" :class="{ active: route.name === 'home' }">Inicio</RouterLink>
-            <a href="#">Nosotros</a>
-            <RouterLink to="/crear-publicacion" :class="{ active: route.name === 'create-publication' }">Peticiones
-            </RouterLink>
+            <RouterLink to="/peticiones" :class="{ active: route.name === 'petitions' }">Peticiones</RouterLink>
+            <RouterLink to="/crear-publicacion" :class="{ active: route.name === 'create-publication' }">Crear</RouterLink>
             <a href="#">Transparencia</a>
           </div>
 
